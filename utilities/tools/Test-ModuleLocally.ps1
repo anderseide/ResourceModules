@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 This function helps with testing a module locally
 
@@ -24,11 +24,11 @@ Optional. A switch parameter that triggers the deployment of the module
 .PARAMETER ValidationTest
 Optional. A switch parameter that triggers the validation of the module only without deployment
 
-.PARAMETER WhatIfTest
-Optional. A switch parameter that triggers the what-if test of the module only without deployment
-
 .PARAMETER SkipParameterFileTokens
 Optional. A switch parameter that enables you to skip the search for local custom parameter file tokens.
+
+.PARAMETER AdditionalParameters
+Optional. Additional parameters you can provide with the deployment. E.g. @{ resourceGroupName = 'myResourceGroup' }
 
 .PARAMETER AdditionalTokens
 Optional. A hashtable parameter that contains custom tokens to be replaced in the paramter files for deployment
@@ -40,7 +40,6 @@ $TestModuleLocallyInput = @{
     ModuleTestFilePath         = 'C:\network\route-table\.test\common\main.test.bicep'
     PesterTest                 = $false
     DeploymentTest             = $false
-    WhatIfTest                 = $false
     ValidationTest             = $true
     ValidateOrDeployParameters = @{
         Location          = 'westeurope'
@@ -50,82 +49,14 @@ $TestModuleLocallyInput = @{
         RemoveDeployment  = $false
     }
     AdditionalTokens           = @{
-        tenantId = '00000000-0000-0000-0000-000000000000'
+        tenantId      = '00000000-0000-0000-0000-000000000000'
+        namePrefix    = 'avm'
+        moduleVersion = '1.0.0'
     }
 }
 Test-ModuleLocally @TestModuleLocallyInput -Verbose
 
 Run a Test-Az*Deployment using a test file with the provided tokens
-
-
-$TestModuleLocallyInput = @{
-    TemplateFilePath           = 'C:\network\route-table\main.bicep'
-    ModuleTestFilePath         = 'C:\network\route-table\tests\e2e\defaults\main.test.bicep'
-    PesterTest                 = $false
-    DeploymentTest             = $false
-    WhatIfTest                 = $true
-    ValidationTest             = $false
-    ValidateOrDeployParameters = @{
-        Location          = 'westeurope'
-        ResourceGroupName = 'validation-rg'
-        SubscriptionId    = '00000000-0000-0000-0000-000000000000'
-        ManagementGroupId = '00000000-0000-0000-0000-000000000000'
-        RemoveDeployment  = $false
-    }
-    AdditionalTokens           = @{
-        tenantId = '00000000-0000-0000-0000-000000000000'
-    }
-}
-Test-ModuleLocally @TestModuleLocallyInput -Verbose
-
-Get What-If deployment result using a specific test-template combination with the provided tokens
-
-.EXAMPLE
-
-$TestModuleLocallyInput = @{
-    TemplateFilePath           = 'C:\network\route-table\main.bicep'
-    ModuleTestFilePath         = 'C:\network\route-table\.test\common\main.test.bicep'
-    PesterTest                 = $false
-    DeploymentTest             = $false
-    WhatIfTest                 = $true
-    ValidationTest             = $false
-    ValidateOrDeployParameters = @{
-        Location          = 'westeurope'
-        ResourceGroupName = 'validation-rg'
-        SubscriptionId    = '00000000-0000-0000-0000-000000000000'
-        ManagementGroupId = '00000000-0000-0000-0000-000000000000'
-        RemoveDeployment  = $false
-    }
-    AdditionalTokens           = @{
-        tenantId = '00000000-0000-0000-0000-000000000000'
-    }
-}
-Test-ModuleLocally @TestModuleLocallyInput -Verbose
-
-Get What-If deployment result using a test file with the provided tokens
-
-.EXAMPLE
-
-$TestModuleLocallyInput = @{
-    TemplateFilePath           = 'C:\network\route-table\main.bicep'
-    PesterTest                 = $true
-    DeploymentTest             = $false
-    WhatIfTest                 = $false
-    ValidationTest             = $true
-    ValidateOrDeployParameters = @{
-        Location          = 'westeurope'
-        ResourceGroupName = 'validation-rg'
-        SubscriptionId    = '00000000-0000-0000-0000-000000000000'
-        ManagementGroupId = '00000000-0000-0000-0000-000000000000'
-        RemoveDeployment  = $false
-    }
-    AdditionalTokens           = @{
-        tenantId = '00000000-0000-0000-0000-000000000000'
-    }
-}
-Test-ModuleLocally @TestModuleLocallyInput -Verbose
-
-Run all Pester tests for a given template and a Test-Az*Deployment using each test file in the module's default test folder ('.test') in combination with the template and the provided tokens
 
 .EXAMPLE
 
@@ -147,12 +78,36 @@ $TestModuleLocallyInput = @{
         ManagementGroupId = '00000000-0000-0000-0000-000000000000'
     }
     AdditionalTokens           = @{
-        tenantId = '00000000-0000-0000-0000-000000000000'
+        tenantId      = '00000000-0000-0000-0000-000000000000'
+        namePrefix    = 'avm'
+        moduleVersion = '1.0.0'
     }
 }
 Test-ModuleLocally @TestModuleLocallyInput -Verbose
 
 Run all Pester tests for the given template file including tests for the use of tokens
+
+.EXAMPLE
+$TestModuleLocallyInput = @{
+    TemplateFilePath           = 'C:\network\route-table\main.bicep'
+    ModuleTestFilePath         = 'C:\network\route-table\.test\common\main.test.bicep'
+    PesterTest                 = $false
+    DeploymentTest             = $false
+    WhatIfTest                 = $true
+    ValidationTest             = $false
+    ValidateOrDeployParameters = @{
+        Location          = 'westeurope'
+        ResourceGroupName = 'validation-rg'
+        SubscriptionId    = '00000000-0000-0000-0000-000000000000'
+        ManagementGroupId = '00000000-0000-0000-0000-000000000000'
+        RemoveDeployment  = $false
+    }
+    AdditionalTokens           = @{
+        tenantId = '00000000-0000-0000-0000-000000000000'
+    }
+}
+Test-ModuleLocally @TestModuleLocallyInput -Verbose
+Get What-If deployment result using a test file with the provided tokens
 
 .NOTES
 - Make sure you provide the right information in the 'ValidateOrDeployParameters' parameter for this function to work.
@@ -169,10 +124,13 @@ function Test-ModuleLocally {
         [string] $ModuleTestFilePath = (Join-Path (Split-Path $TemplateFilePath -Parent) 'tests'),
 
         [Parameter(Mandatory = $false)]
-        [string] $PesterTestFilePath = 'utilities/pipelines/staticValidation/module.tests.ps1',
+        [string] $PesterTestFilePath = 'utilities/pipelines/staticValidation/compliance/module.tests.ps1',
 
         [Parameter(Mandatory = $false)]
         [Psobject] $ValidateOrDeployParameters = @{},
+
+        [Parameter(Mandatory = $false)]
+        [hashtable] $AdditionalParameters = @{},
 
         [Parameter(Mandatory = $false)]
         [hashtable] $AdditionalTokens = @{},
@@ -191,58 +149,20 @@ function Test-ModuleLocally {
     )
 
     begin {
-        $repoRootPath = (Get-Item $PSScriptRoot).Parent.Parent
+        $repoRootPath = (Get-Item $PSScriptRoot).Parent.Parent.Parent.FullName
         $ModuleName = Split-Path (Split-Path $TemplateFilePath -Parent) -Leaf
         $utilitiesFolderPath = Split-Path $PSScriptRoot -Parent
+        $moduleRoot = Split-Path $TemplateFilePath
         Write-Verbose "Running local tests for [$ModuleName]"
         # Load Tokens Converter Scripts
-        . (Join-Path $utilitiesFolderPath 'pipelines' 'tokensReplacement' 'Convert-TokensInFileList.ps1')
+        . (Join-Path $utilitiesFolderPath 'pipelines' 'sharedScripts' 'tokenReplacement' 'Convert-TokensInFileList.ps1')
+        . (Join-Path $utilitiesFolderPath 'pipelines' 'sharedScripts' 'Get-LocallyReferencedFileList.ps1')
         # Load Modules Validation / Deployment Scripts
-        . (Join-Path $utilitiesFolderPath 'pipelines' 'resourceDeployment' 'New-TemplateDeployment.ps1')
-        . (Join-Path $utilitiesFolderPath 'pipelines' 'resourceDeployment' 'Test-TemplateDeployment.ps1')
+        . (Join-Path $utilitiesFolderPath 'pipelines' 'e2eValidation' 'resourceDeployment' 'New-TemplateDeployment.ps1')
+        . (Join-Path $utilitiesFolderPath 'pipelines' 'e2eValidation' 'resourceDeployment' 'Test-TemplateDeployment.ps1')
         . (Join-Path $PSScriptRoot 'helper' 'Get-TemplateDeploymentWhatIf.ps1')
     }
     process {
-
-        # Find Test Parameter Files
-        # -------------------------
-        if ((Get-Item -Path $ModuleTestFilePath) -is [System.IO.DirectoryInfo]) {
-            $moduleTestFiles = (Get-ChildItem -Path $ModuleTestFilePath -File).FullName
-        } else {
-            $moduleTestFiles = @($ModuleTestFilePath)
-        }
-
-        # Construct Token Configuration Input
-        $GlobalVariablesObject = Get-Content -Path (Join-Path $repoRootPath 'settings.yml') | ConvertFrom-Yaml -ErrorAction Stop | Select-Object -ExpandProperty 'variables'
-        $tokenConfiguration = @{
-            FilePathList = $moduleTestFiles
-            Tokens       = @{}
-            TokenPrefix  = $GlobalVariablesObject | Select-Object -ExpandProperty 'tokenPrefix'
-            TokenSuffix  = $GlobalVariablesObject | Select-Object -ExpandProperty 'tokenSuffix'
-        }
-
-        # Add Enforced Tokens
-        $enforcedTokenList = @{}
-        if ($ValidateOrDeployParameters.ContainsKey('subscriptionId')) {
-            $enforcedTokenList['subscriptionId'] = $ValidateOrDeployParameters.SubscriptionId
-        }
-        if ($ValidateOrDeployParameters.ContainsKey('managementGroupId')) {
-            $enforcedTokenList['managementGroupId'] = $ValidateOrDeployParameters.ManagementGroupId
-        }
-        if ($AdditionalTokens.ContainsKey('tenantId')) {
-            $enforcedTokenList['tenantId'] = $AdditionalTokens['tenantId']
-        }
-        $tokenConfiguration.Tokens += $enforcedTokenList
-
-        # Add local (source control) tokens
-        foreach ($localToken in ($GlobalVariablesObject.Keys | ForEach-Object { if ($PSItem.contains('localToken_')) { $PSItem } })) {
-            $tokenConfiguration.Tokens[$localToken.Replace('localToken_', '', 'OrdinalIgnoreCase')] = $GlobalVariablesObject.$localToken
-        }
-
-        # Add Other Parameter File Tokens (For Testing)
-        $AdditionalTokens.Keys | ForEach-Object {
-            $tokenConfiguration.Tokens[$PSItem] = $AdditionalTokens.$PSItem
-        }
 
         ################
         # PESTER Tests #
@@ -250,21 +170,17 @@ function Test-ModuleLocally {
         if ($PesterTest) {
             Write-Verbose "Pester Testing Module: $ModuleName"
 
-            # Construct Pester Token Configuration Input
-            $PesterTokenConfiguration = @{
-                FilePathList = $moduleTestFiles
-                Tokens       = $enforcedTokenList
-                TokenPrefix  = $GlobalVariablesObject | Select-Object -ExpandProperty tokenPrefix
-                TokenSuffix  = $GlobalVariablesObject | Select-Object -ExpandProperty tokenSuffix
-            }
-
             try {
+                $testFiles = @(
+                    (Join-Path $repoRootPath $PesterTestFilePath), # AVM Compliance Tests
+                    (Join-Path $moduleRoot 'tests' 'unit')         # Module Unit Tests
+                )
+
                 Invoke-Pester -Configuration @{
                     Run    = @{
-                        Container = New-PesterContainer -Path (Join-Path $repoRootPath $PesterTestFilePath) -Data @{
-                            repoRootPath       = $repoRootPath
-                            moduleFolderPaths  = Split-Path $TemplateFilePath -Parent
-                            tokenConfiguration = $PesterTokenConfiguration
+                        Container = New-PesterContainer -Path $testFiles -Data @{
+                            repoRootPath      = $repoRootPath
+                            moduleFolderPaths = Split-Path $TemplateFilePath -Parent
                         }
                     }
                     Output = @{
@@ -282,18 +198,53 @@ function Test-ModuleLocally {
 
         if (($ValidationTest -or $DeploymentTest -or $WhatIfTest) -and $ValidateOrDeployParameters) {
 
+            # Find Test Parameter Files
+            # -------------------------
+            if ((Get-Item -Path $ModuleTestFilePath) -is [System.IO.DirectoryInfo]) {
+                $moduleTestFiles = (Get-ChildItem -Path $ModuleTestFilePath -File).FullName
+            } else {
+                $moduleTestFiles = @($ModuleTestFilePath)
+            }
+
+            # Construct Token Configuration Input
+            $tokenConfiguration = @{
+                FilePathList = @($moduleTestFiles)
+                Tokens       = @{}
+            }
+
+            # Add any additional file that may contain tokens
+            foreach ($testFilePath in $moduleTestFiles) {
+                $tokenConfiguration.FilePathList += (Get-LocallyReferencedFileList -FilePath $testFilePath)
+            }
+            $tokenConfiguration.FilePathList = $tokenConfiguration.FilePathList | Sort-Object -Culture 'en-US' -Unique
+
+            # Add other template files as they may contain the 'moduleVersion'
+            $tokenConfiguration.FilePathList += (Get-ChildItem -Path $moduleRoot -Recurse -File).FullName | Where-Object { $_ -match '.+(main.json|main.bicep)$' }
+
+            # Default tokens
+            $tokenConfiguration.Tokens += @{
+                subscriptionId    = $ValidateOrDeployParameters.SubscriptionId
+                managementGroupId = $ValidateOrDeployParameters.ManagementGroupId
+            }
+
+            # Add Other Parameter File Tokens (For Testing)
+            $AdditionalTokens.Keys | ForEach-Object {
+                $tokenConfiguration.Tokens[$PSItem] = $AdditionalTokens.$PSItem
+            }
+
             # Invoke Token Replacement Functionality and Convert Tokens in Parameter Files
             $null = Convert-TokensInFileList @tokenConfiguration
 
             # Deployment & Validation Testing
             # -------------------------------
             $functionInput = @{
-                TemplateFilePath  = $TemplateFilePath
-                location          = $ValidateOrDeployParameters.Location
-                resourceGroupName = $ValidateOrDeployParameters.ResourceGroupName
-                subscriptionId    = $ValidateOrDeployParameters.SubscriptionId
-                managementGroupId = $ValidateOrDeployParameters.ManagementGroupId
-                Verbose           = $true
+                DeploymentMetadataLocation = $ValidateOrDeployParameters.Location
+                resourceGroupName          = $ValidateOrDeployParameters.ResourceGroupName
+                subscriptionId             = $ValidateOrDeployParameters.SubscriptionId
+                managementGroupId          = $ValidateOrDeployParameters.ManagementGroupId
+                additionalParameters       = $additionalParameters
+                RepoRoot                   = $repoRootPath
+                Verbose                    = $true
             }
 
             try {
@@ -306,6 +257,7 @@ function Test-ModuleLocally {
                         Test-TemplateDeployment @functionInput -TemplateFilePath $moduleTestFile
                     }
                 }
+
                 # What-If validation for template
                 # -----------------
                 if ($WhatIfTest) {
@@ -315,6 +267,7 @@ function Test-ModuleLocally {
                         Get-TemplateDeploymentWhatIf @functionInput -TemplateFilePath $moduleTestFile
                     }
                 }
+
                 # Deploy template
                 # ---------------
                 if ($DeploymentTest) {
