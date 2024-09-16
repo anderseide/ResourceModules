@@ -1,4 +1,4 @@
-name: "module.res.resources.resource-group"
+name: "modules.res.resources.resource-group.yml"
 
 on:
   workflow_dispatch:

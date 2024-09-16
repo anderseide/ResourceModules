@@ -1,4 +1,4 @@
-name: "module.res.resources.resource-group"
+name: "modules.res.storage.storage-account"
 
 on:
   workflow_dispatch:

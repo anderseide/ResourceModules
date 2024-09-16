@@ -1,4 +1,4 @@
-name: "module.res.resources.resource-group"
+name: "modules.ptn.authorization.resource-role-assignment"
 
 on:
   workflow_dispatch:
