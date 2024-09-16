@@ -28,15 +28,15 @@ on:
     paths:
       - ".github/actions/templates/**"
       - ".github/workflows/module.template.module.yml"
-      - ".github/workflows/module.ptn.network.private-link-private-dns-zones.yml"
-      - "modules/ptn/network/private-link-private-dns-zones/**"
+      - ".github/workflows/module.ptn.authorization.resource-role-assignment.yml"
+      - "modules/ptn/authorization/resource-role-assignment/**"
       - "utilities/pipelines/**"
       - "!utilities/pipelines/platform/**"
       - "!*/**/README.md"
 
 env:
-  modulePath: "modules/ptn/network/private-link-private-dns-zones"
-  workflowPath: ".github/workflows/module.ptn.network.private-link-private-dns-zones.yml"
+  modulePath: "modules/ptn/authorization/resource-role-assignment"
+  workflowPath: ".github/workflows/module.ptn.authorization.resource-role-assignment.yml"
 
 concurrency:
   group: ${{ github.workflow }}
