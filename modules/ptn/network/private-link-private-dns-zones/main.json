@@ -5,11 +5,11 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "14657903652315032420"
+      "templateHash": "16134761553934997265"
     },
     "name": "avm/ptn/network/private-link-private-dns-zones",
     "description": "Private Link Private DNS Zones",
-    "owner": "jtracey93"
+    "owner": "Azure/module-maintainers"
   },
   "parameters": {
     "location": {
