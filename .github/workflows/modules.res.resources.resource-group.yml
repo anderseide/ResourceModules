@@ -28,7 +28,7 @@ on:
     paths:
       - ".github/actions/templates/**"
       - ".github/workflows/module.template.module.yml"
-      - ".github/workflows/module.res.resources.resource-group.yml"
+      - ".github/workflows/modules.res.resources.resource-group.yml"
       - "modules/res/resources/resource-group/**"
       - "utilities/pipelines/**"
       - "!utilities/pipelines/platform/**"
@@ -36,7 +36,7 @@ on:
 
 env:
   modulePath: "modules/res/resources/resource-group"
-  workflowPath: ".github/workflows/module.res.resources.resource-group.yml"
+  workflowPath: ".github/workflows/modules.res.resources.resource-group.yml"
 
 concurrency:
   group: ${{ github.workflow }}

@@ -28,7 +28,7 @@ on:
     paths:
       - ".github/actions/templates/**"
       - ".github/workflows/module.template.module.yml"
-      - ".github/workflows/module.ptn.authorization.resource-role-assignment.yml"
+      - ".github/workflows/modules.ptn.authorization.resource-role-assignment.yml"
       - "modules/ptn/authorization/resource-role-assignment/**"
       - "utilities/pipelines/**"
       - "!utilities/pipelines/platform/**"
@@ -36,7 +36,7 @@ on:
 
 env:
   modulePath: "modules/ptn/authorization/resource-role-assignment"
-  workflowPath: ".github/workflows/module.ptn.authorization.resource-role-assignment.yml"
+  workflowPath: ".github/workflows/modules.ptn.authorization.resource-role-assignment.yml"
 
 concurrency:
   group: ${{ github.workflow }}

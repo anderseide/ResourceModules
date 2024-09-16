@@ -28,7 +28,7 @@ on:
     paths:
       - ".github/actions/templates/**"
       - ".github/workflows/module.template.module.yml"
-      - ".github/workflows/module.res.storage.storage-account.yml"
+      - ".github/workflows/modules.res.storage.storage-account.yml"
       - "modules/res/storage/storage-account/**"
       - "utilities/pipelines/**"
       - "!utilities/pipelines/platform/**"
@@ -36,7 +36,7 @@ on:
 
 env:
   modulePath: "modules/res/storage/storage-account"
-  workflowPath: ".github/workflows/module.res.storage.storage-account.yml"
+  workflowPath: ".github/workflows/modules.res.storage.storage-account.yml"
 
 concurrency:
   group: ${{ github.workflow }}
