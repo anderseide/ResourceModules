@@ -16,7 +16,7 @@ param lock lockType
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType
 
-@description('Optional. Tags for the resource.')
+@description('Optional. Object of tags for the resource.')
 param tags object?
 
 @description('Optional. Enable/Disable usage telemetry for module.')
