@@ -2,6 +2,7 @@
 
 This module deploys a Role Assignment for a specific resource.
 
+
 ## Navigation
 
 - [Resource Types](#Resource-Types)
@@ -20,10 +21,11 @@ The following section provides usage examples for the module, which were used to
 
 >**Note**: Each example lists all the required parameters first, followed by the rest - each in alphabetical order.
 
->**Note**: To reference the module, please use the following syntax `br/public:avm/ptn/authorization/resource-role-assignment:<version>`.
+>**Note**: To reference the module, please use the following syntax `br/public:modules/ptn/authorization/resource-role-assignment:<version>`.
 
 - [Resource Role Assignments](#example-1-resource-role-assignments)
 - [Resource Role Assignments](#example-2-resource-role-assignments)
+- [Resource Role Assignments](#example-3-resource-role-assignments)
 
 ### Example 1: _Resource Role Assignments_
 
@@ -35,7 +37,7 @@ This module deploys a Resource Role Assignment using all parameters.
 <summary>via Bicep module</summary>
 
 ```bicep
-module resourceRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:<version>' = {
+module resourceRoleAssignment 'br/public:modules/ptn/authorization/resource-role-assignment:<version>' = {
   name: 'resourceRoleAssignmentDeployment'
   params: {
     // Required parameters
@@ -99,7 +101,63 @@ This module deploys a Resource Role Assignment using minimal parameters.
 <summary>via Bicep module</summary>
 
 ```bicep
-module resourceRoleAssignment 'br/public:avm/ptn/authorization/resource-role-assignment:<version>' = {
+module resourceRoleAssignment 'br/public:modules/ptn/authorization/resource-role-assignment:<version>' = {
+  name: 'resourceRoleAssignmentDeployment'
+  params: {
+    // Required parameters
+    principalId: '<principalId>'
+    resourceId: '<resourceId>'
+    roleDefinitionId: '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
+    // Non-required parameters
+    principalType: 'ServicePrincipal'
+  }
+}
+```
+
+</details>
+<p>
+
+<details>
+
+<summary>via JSON Parameter file</summary>
+
+```json
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    // Required parameters
+    "principalId": {
+      "value": "<principalId>"
+    },
+    "resourceId": {
+      "value": "<resourceId>"
+    },
+    "roleDefinitionId": {
+      "value": "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1"
+    },
+    // Non-required parameters
+    "principalType": {
+      "value": "ServicePrincipal"
+    }
+  }
+}
+```
+
+</details>
+<p>
+
+### Example 3: _Resource Role Assignments_
+
+This module deploys a Resource Role Assignment using waf-aligned parameters.
+
+
+<details>
+
+<summary>via Bicep module</summary>
+
+```bicep
+module resourceRoleAssignment 'br/public:modules/ptn/authorization/resource-role-assignment:<version>' = {
   name: 'resourceRoleAssignmentDeployment'
   params: {
     // Required parameters

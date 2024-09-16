@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.28.1.47646",
-      "templateHash": "17607291889971078318"
+      "version": "0.29.47.4906",
+      "templateHash": "18071930107734617642"
     },
     "name": "Resource-scoped role assignment",
     "description": "This module deploys a Role Assignment for a specific resource.",
