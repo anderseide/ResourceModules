@@ -45,11 +45,9 @@ function Set-PSRuleGitHubOutput {
         Write-Warning ('Input File [{0}] not found' -f $inputFilePath)
         return ''
     } else {
-
         $results = Import-Csv -Path $inputFilePath
-
-        $passedRules += $results | Where-Object { $_.Outcome -EQ 'Pass' } | Sort-Object -Property 'RuleName' -Unique
-        $failedRules += $results | Where-Object { $_.Outcome -EQ 'Fail' } | Sort-Object -Property 'RuleName' -Unique
+        $passedRules += $results | Where-Object { $_.Outcome -EQ 'Pass' } | Sort-Object -Culture 'en-US' -Property 'TargetName', 'RuleName' -Unique
+        $failedRules += $results | Where-Object { $_.Outcome -EQ 'Fail' } | Sort-Object -Culture 'en-US' -Property 'TargetName', 'RuleName' -Unique
 
         ######################
         # Set output content #
@@ -93,7 +91,7 @@ function Set-PSRuleGitHubOutput {
                 # Shorten the target name for deployment resoure type
                 if ($content.TargetType -eq 'Microsoft.Resources/deployments') {
                     $content.TargetName = $content.TargetName.replace('/home/runner/work/ResourceModules/ResourceModules/modules/', '')
-                }
+                }b
 
                 # Build hyperlinks to PSRule documentation for the rules
                 $TemplatesBaseUrl = 'https://azure.github.io/PSRule.Rules.Azure/en/rules'

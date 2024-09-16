@@ -15,8 +15,8 @@ binding:
 
 # Require minimum versions of modules.
 requires:
-  PSRule: '@pre >=2.9.0'
-  PSRule.Rules.Azure: '>=1.29.0'
+  PSRule: "@pre >=2.9.0"
+  PSRule.Rules.Azure: "@pre >=1.38.0"
 
 # Use PSRule for Azure.
 include:
@@ -29,14 +29,15 @@ execution:
 
 output:
   culture:
-    - 'en-US'
+    - "en-US"
 
 input:
   pathIgnore:
     # Exclude all files.
-    - '*'
-    # Only process test files.
-    - '!modules/**/*.test.bicep'
+    - "*"
+    # Only process defaults and waf-aligned test files.
+    - "!modules/**/defaults/*.test.bicep"
+    - "!modules/**/waf-aligned/*.test.bicep"
 
 configuration:
   # Enable automatic expansion of Azure parameter files.
@@ -46,29 +47,29 @@ configuration:
   AZURE_BICEP_FILE_EXPANSION: true
 
   # Configures the number of seconds to wait for build Bicep files.
-  AZURE_BICEP_FILE_EXPANSION_TIMEOUT: 10
+  AZURE_BICEP_FILE_EXPANSION_TIMEOUT: 20
 
   # Custom non-sensitive parameters' names
   AZURE_DEPLOYMENT_NONSENSITIVE_PARAMETER_NAMES:
     [
-      'sasTokenValidityLength',
-      'passwordlength',
-      'secretname',
-      'secreturl',
-      'secreturi',
-      'secretrotation',
-      'secretinterval',
-      'secretprovider',
-      'secretsprovider',
-      'secretref',
-      'secretid',
-      'disablepassword',
-      'sync*passwords',
-      'sqlAdministratorLogin',
-      'tokenname',
-      'ssoClientSecretKeyVaultPath',
-      'ssoSecretType',
-      'tokenValidityLength',
+      "sasTokenValidityLength",
+      "passwordlength",
+      "secretname",
+      "secreturl",
+      "secreturi",
+      "secretrotation",
+      "secretinterval",
+      "secretprovider",
+      "secretsprovider",
+      "secretref",
+      "secretid",
+      "disablepassword",
+      "sync*passwords",
+      "sqlAdministratorLogin",
+      "tokenname",
+      "ssoClientSecretKeyVaultPath",
+      "ssoSecretType",
+      "tokenValidityLength",
     ]
 
 rule:
@@ -78,3 +79,6 @@ rule:
     # Ignore the following rules for all resources
     - Azure.KeyVault.PurgeProtect
     - Azure.VM.UseHybridUseBenefit
+    - Azure.AppConfig.PurgeProtect
+    - Azure.MySQL.MaintenanceWindow # Must be excluded until https://msdata.visualstudio.com/Database%20Systems/_workitems/edit/2788114 is fixed
+    - Azure.AppService.AvailabilityZone # Must disable as the serverfarm premium skus are not available in the AVM subscription. The module is WAF-aligned, just the tests don't validate it
