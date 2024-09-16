@@ -16,7 +16,7 @@ param lock lockType
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType
 
-@description('Optional. Tags of the storage account resource.')
+@description('Optional. Tags for the resource.')
 param tags object?
 
 @description('Optional. Enable/Disable usage telemetry for module.')
@@ -46,7 +46,6 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   location: location
   name: name
   tags: tags
-  // managedBy: managedBy // removed due to immutable string, only used for managed resource groups
   properties: {}
 }
 
