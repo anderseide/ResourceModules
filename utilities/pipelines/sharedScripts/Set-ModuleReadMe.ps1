@@ -51,7 +51,6 @@ Update the 'Resource Types' section of the given readme file
 
 .DESCRIPTION
 Update the 'Resource Types' section of the given readme file
-The section is added at the end if it does not exist
 
 .PARAMETER TemplateFileContent
 Mandatory. The template file content object to crawl data from
@@ -88,42 +87,48 @@ function Set-ResourceTypesSection {
         [string[]] $ResourceTypesToExclude = @('Microsoft.Resources/deployments')
     )
 
-    # Process content
-    $SectionContent = [System.Collections.ArrayList]@(
-        '| Resource Type | API Version |',
-        '| :-- | :-- |'
-    )
-
     $RelevantResourceTypeObjects = Get-NestedResourceList $TemplateFileContent | Where-Object {
         $_.type -notin $ResourceTypesToExclude -and $_
-    } | Select-Object 'Type', 'ApiVersion' -Unique | Sort-Object Type -Culture 'en-US'
+    } | Select-Object 'Type', 'ApiVersion' -Unique | Sort-Object -Culture 'en-US' -Property 'Type'
 
-    $ProgressPreference = 'SilentlyContinue'
-    $VerbosePreference = 'SilentlyContinue'
-    foreach ($resourceTypeObject in $RelevantResourceTypeObjects) {
-        $ProviderNamespace, $ResourceType = $resourceTypeObject.Type -split '/', 2
-        # Validate if Reference URL is working
-        $TemplatesBaseUrl = 'https://learn.microsoft.com/en-us/azure/templates'
+    if (-not $RelevantResourceTypeObjects) {
+        # no resource types in the template
+        $SectionContent = '_None_'
+    } else {
+        # Process content
+        $SectionContent = [System.Collections.ArrayList]@(
+            '| Resource Type | API Version |',
+            '| :-- | :-- |'
+        )
 
-        $ResourceReferenceUrl = '{0}/{1}/{2}/{3}' -f $TemplatesBaseUrl, $ProviderNamespace, $resourceTypeObject.ApiVersion, $ResourceType
-        if (-not (Test-Url $ResourceReferenceUrl)) {
-            # Validate if Reference URL is working using the latest documented API version (with no API version in the URL)
-            $ResourceReferenceUrl = '{0}/{1}/{2}' -f $TemplatesBaseUrl, $ProviderNamespace, $ResourceType
-        }
-        if (-not (Test-Url $ResourceReferenceUrl)) {
-            # Check if the resource is a child resource
-            if ($ResourceType.Split('/').length -gt 1) {
-                $ResourceReferenceUrl = '{0}/{1}/{2}' -f $TemplatesBaseUrl, $ProviderNamespace, $ResourceType.Split('/')[0]
-            } else {
-                # Use the default Templates URL (Last resort)
-                $ResourceReferenceUrl = '{0}' -f $TemplatesBaseUrl
+        $ProgressPreference = 'SilentlyContinue'
+        $VerbosePreference = 'SilentlyContinue'
+
+        foreach ($resourceTypeObject in $RelevantResourceTypeObjects) {
+            $ProviderNamespace, $ResourceType = $resourceTypeObject.Type -split '/', 2
+            # Validate if Reference URL is working
+            $TemplatesBaseUrl = 'https://learn.microsoft.com/en-us/azure/templates'
+
+            $ResourceReferenceUrl = '{0}/{1}/{2}/{3}' -f $TemplatesBaseUrl, $ProviderNamespace, $resourceTypeObject.ApiVersion, $ResourceType
+            if (-not (Test-Url $ResourceReferenceUrl)) {
+                # Validate if Reference URL is working using the latest documented API version (with no API version in the URL)
+                $ResourceReferenceUrl = '{0}/{1}/{2}' -f $TemplatesBaseUrl, $ProviderNamespace, $ResourceType
             }
-        }
+            if (-not (Test-Url $ResourceReferenceUrl)) {
+                # Check if the resource is a child resource
+                if ($ResourceType.Split('/').length -gt 1) {
+                    $ResourceReferenceUrl = '{0}/{1}/{2}' -f $TemplatesBaseUrl, $ProviderNamespace, $ResourceType.Split('/')[0]
+                } else {
+                    # Use the default Templates URL (Last resort)
+                    $ResourceReferenceUrl = '{0}' -f $TemplatesBaseUrl
+                }
+            }
 
-        $SectionContent += ('| `{0}` | [{1}]({2}) |' -f $resourceTypeObject.type, $resourceTypeObject.apiVersion, $ResourceReferenceUrl)
+            $SectionContent += ('| `{0}` | [{1}]({2}) |' -f $resourceTypeObject.type, $resourceTypeObject.apiVersion, $ResourceReferenceUrl)
+        }
+        $ProgressPreference = 'Continue'
+        $VerbosePreference = 'Continue'
     }
-    $ProgressPreference = 'Continue'
-    $VerbosePreference = 'Continue'
 
     # Build result
     if ($PSCmdlet.ShouldProcess('Original file with new resource type content', 'Merge')) {
@@ -138,7 +143,6 @@ Update the 'parameters' section of the given readme file
 
 .DESCRIPTION
 Update the 'parameters' section of the given readme file
-The section is added at the end if it does not exist
 
 .PARAMETER TemplateFileContent
 Mandatory. The template file content object to crawl data from
@@ -221,6 +225,8 @@ Top-level invocation. Will start from the TemplateFile's parameters object and r
 .EXAMPLE
 Set-DefinitionSection -TemplateFileContent @{ resource = @{}; ... } -Properties @{ @{ name = @{ type = 'string'; 'allowedValues' = @('A1','A2','A3','A4','A5','A6'); 'nullable' = $true; (...) } -ParentName 'diagnosticSettings' -ParentIdentifierLink '#parameter-diagnosticsettings'
 
+Child-level invocation during recursion.
+
 .NOTES
 The function is recursive and will also output grand, great grand children, ... .
 #>
@@ -242,16 +248,32 @@ function Set-DefinitionSection {
         [string[]] $ColumnsInOrder = @('Required', 'Conditional', 'Optional', 'Generated')
     )
 
-    if (-not $Properties) {
+    if (-not $Properties -and -not $TemplateFileContent.parameters) {
+        # no Parameters / properties on this level or in the template
+        return '_None_'
+    } elseif (-not $Properties) {
+
         # Top-level invocation
         # Get all descriptions
         $descriptions = $TemplateFileContent.parameters.Values.metadata.description
         # Add name as property for later reference
         $TemplateFileContent.parameters.Keys | ForEach-Object { $TemplateFileContent.parameters[$_]['name'] = $_ }
+
+        # Error handling: Throw error if any parameter is missing a category
+        if ($paramsWithoutCategory = $TemplateFileContent.parameters.Values | Where-Object { $_.metadata.description -notmatch '^\w+?\.' }) {
+            $formattedParam = $paramsWithoutCategory | ForEach-Object { [PSCustomObject]@{ name = $_.name; description = $_.metadata.description } } | ConvertTo-Json -Compress
+            Write-Error ("Each parameter description should start with a category like [Required. / Optional. / Conditional. ]. The following parameters are missing such a category: `n$formattedParam`n")
+        }
     } else {
         $descriptions = $Properties.Values.metadata.description
         # Add name as property for later reference
         $Properties.Keys | ForEach-Object { $Properties[$_]['name'] = $_ }
+
+        # Error handling: Throw error if any parameter is missing a category
+        if ($paramsWithoutCategory = $Properties.Values | Where-Object { $_.metadata.description -notmatch '^\w+?\.' }) {
+            $formattedParam = $paramsWithoutCategory | ForEach-Object { [PSCustomObject]@{ name = $_.name; description = $_.metadata.description } } | ConvertTo-Json -Compress
+            Write-Error ("Each parameter description should start with a category like [Required. / Optional. / Conditional. ]. The following parameters are missing such a category: `n$formattedParam`n")
+        }
     }
 
     # Get the module parameter categories
@@ -271,9 +293,9 @@ function Set-DefinitionSection {
         # Filter to relevant items
         if (-not $Properties) {
             # Top-level invocation
-            [array] $categoryParameters = $TemplateFileContent.parameters.Values | Where-Object { $_.metadata.description -like "$category. *" } | Sort-Object -Property 'Name' -Culture 'en-US'
+            [array] $categoryParameters = $TemplateFileContent.parameters.Values | Where-Object { $_.metadata.description -like "$category. *" } | Sort-Object -Culture 'en-US' -Property 'Name'
         } else {
-            $categoryParameters = $Properties.Values | Where-Object { $_.metadata.description -like "$category. *" } | Sort-Object -Property 'Name' -Culture 'en-US'
+            $categoryParameters = $Properties.Values | Where-Object { $_.metadata.description -like "$category. *" } | Sort-Object -Culture 'en-US' -Property 'Name'
         }
 
         $tableSectionContent += @(
@@ -299,6 +321,17 @@ function Set-DefinitionSection {
                 $definition = $TemplateFileContent.definitions[$identifier]
                 $type = $definition['type']
                 $rawAllowedValues = $definition['allowedValues']
+            } elseif ($parameter.Keys -contains 'items' -and $parameter.items.type -in @('object', 'array') -or $parameter.type -eq 'object') {
+                # Array has nested non-primitive type (array/object) - and if array, the the UDT itself is declared as the array
+                $definition = $parameter
+                $type = $parameter.type
+                $rawAllowedValues = $parameter.allowedValues
+            } elseif ($parameter.Keys -contains 'items' -and $parameter.items.keys -contains '$ref') {
+                # Array has nested non-primitive type (array) - and the parameter is defined as an array of the UDT
+                $identifier = Split-Path $parameter.items.'$ref' -Leaf
+                $definition = $TemplateFileContent.definitions[$identifier]
+                $type = $parameter.type
+                $rawAllowedValues = $definition['allowedValues']
             } else {
                 $definition = $null
                 $type = $parameter.type
@@ -307,6 +340,7 @@ function Set-DefinitionSection {
 
             $isRequired = (Get-IsParameterRequired -TemplateFileContent $TemplateFileContent -Parameter $parameter) ? 'Yes' : 'No'
             $description = $parameter.ContainsKey('metadata') ? $parameter['metadata']['description'].substring("$category. ".Length).Replace("`n- ", '<li>').Replace("`r`n", '<p>').Replace("`n", '<p>') : $null
+            $example = ($parameter.ContainsKey('metadata') -and $parameter['metadata'].ContainsKey('example')) ? $parameter['metadata']['example'] : $null
 
             #####################
             #   Table content   #
@@ -356,7 +390,7 @@ function Set-DefinitionSection {
                     )
                 }
             } else {
-                $formattedDefaultValue = $null
+                $formattedDefaultValue = $null # Reset value for future iterations
             }
 
             # Format allowed values
@@ -386,7 +420,54 @@ function Set-DefinitionSection {
                     )
                 }
             } else {
-                $formattedAllowedValues = $null
+                $formattedAllowedValues = $null # Reset value for future iterations
+            }
+
+            # Special case for 'roleAssignments' parameter
+            if (($parameter.name -eq 'roleAssignments') -and ($TemplateFileContent.variables.keys -contains 'builtInRoleNames')) {
+                if ([String]::IsNullOrEmpty($ParentName)) {
+                    # Top-level invocation
+                    $roles = $TemplateFileContent.variables.builtInRoleNames.Keys
+                } else {
+                    # Nested-invocation (requires e.g., roles for of nested private endpoint template)
+                    $flattendResources = Get-NestedResourceList -TemplateFileContent $TemplateFileContent
+                    if ($resourceIdentifier = $flattendResources.identifier | Where-Object { $_ -match "^.*_$ParentName`$" }) {
+                        $roles = ($flattendResources | Where-Object {
+                                $_.identifier -eq $resourceIdentifier
+                            }).properties.template.variables.builtInRoleNames.Keys
+                    } else {
+                        Write-Warning ('Failed to identify roles for parameter [{0}] of type [{1}] as resource with identifier [{2}] was not found in the corresponding linked template.' -f $parameter.name, $ParentName, "*_$ParentName")
+                    }
+                }
+                $formattedRoleNames = $roles.count -gt 0 ? @(
+                    '- Roles configurable by name:',
+                    ($roles | ForEach-Object { "  - ``'$_'``" } | Out-String).TrimEnd()
+                ) : $null
+            } else {
+                $formattedRoleNames = $null # Reset value for future iterations
+            }
+
+            # Format example
+            # ==============
+            if (-not [String]::IsNullOrEmpty($example)) {
+                # allign content to the left by removing trailing whitespaces
+                $leadingSpacesToTrim = ($example -match '^(\s+).+') ? $matches[1].Length : 0
+                $exampleLines = $example -split '\n'
+                # Removing excess leading spaces
+                $example = ($exampleLines | Where-Object { -not [String]::IsNullOrEmpty($_) } | ForEach-Object { "  $_" -replace "^\s{$leadingSpacesToTrim}" } | Out-String).TrimEnd()
+
+                if ($exampleLines.count -eq 1) {
+                    $formattedExample = '- Example: `{0}`' -f $example.TrimStart()
+                } else {
+                    $formattedExample = @(
+                        '- Example:',
+                        '  ```Bicep',
+                        $example,
+                        '  ```'
+                    )
+                }
+            } else {
+                $formattedExample = $null
             }
 
             # Build list item
@@ -399,23 +480,40 @@ function Set-DefinitionSection {
             ('- Required: {0}' -f $isRequired),
             ('- Type: {0}' -f $type),
             ((-not [String]::IsNullOrEmpty($formattedDefaultValue)) ? $formattedDefaultValue : $null),
-            ((-not [String]::IsNullOrEmpty($formattedAllowedValues)) ? $formattedAllowedValues : $null)
+            ((-not [String]::IsNullOrEmpty($formattedAllowedValues)) ? $formattedAllowedValues : $null),
+            ((-not [String]::IsNullOrEmpty($formattedRoleNames)) ? $formattedRoleNames : $null),
+            ((-not [String]::IsNullOrEmpty($formattedExample)) ? $formattedExample : $null),
                 ''
             ) | Where-Object { $null -ne $_ }
 
             #recursive call for children
             if ($definition) {
-                if ($definition.ContainsKey('items') -and $definition['items'].ContainsKey('properties')) {
-                    $childProperties = $definition['items']['properties']
-                    $sectionContent = Set-DefinitionSection -TemplateFileContent $TemplateFileContent -Properties $childProperties -ParentName $paramIdentifier -ParentIdentifierLink $paramIdentifierLink -ColumnsInOrder $ColumnsInOrder
-
-                    $listSectionContent += $sectionContent
-
-                } elseif ($definition.type -eq 'object' -and $definition['properties']) {
-                    $childProperties = $definition['properties']
-                    $sectionContent = Set-DefinitionSection -TemplateFileContent $TemplateFileContent -Properties $childProperties -ParentName $paramIdentifier -ParentIdentifierLink $paramIdentifierLink -ColumnsInOrder $ColumnsInOrder
-
-                    $listSectionContent += $sectionContent
+                # 'items' refers to an array
+                # 'properties' is the default for UDTs, 'additionalProperties' represents a used '*' identifier
+                if ($definition.Keys -contains 'items' -and ($definition.items.properties.Keys -or $definition.items.additionalProperties.Keys)) {
+                    if ($definition.items.properties.Keys) {
+                        $childProperties = $definition.items.properties
+                        $sectionContent = Set-DefinitionSection -TemplateFileContent $TemplateFileContent -Properties $childProperties -ParentName $paramIdentifier -ParentIdentifierLink $paramIdentifierLink -ColumnsInOrder $ColumnsInOrder
+                        $listSectionContent += $sectionContent
+                    }
+                    if ($definition.items.additionalProperties.Keys) {
+                        $childProperties = $definition.items.additionalProperties
+                        $formattedProperties = @{ '>Any_other_property<' = $childProperties }
+                        $sectionContent = Set-DefinitionSection -TemplateFileContent $TemplateFileContent -Properties $formattedProperties -ParentName $paramIdentifier -ParentIdentifierLink $paramIdentifierLink -ColumnsInOrder $ColumnsInOrder
+                        $listSectionContent += $sectionContent
+                    }
+                } elseif ($definition.type -eq 'object' -and ($definition.properties.Keys -or $definition.additionalProperties.Keys)) {
+                    if ($definition.properties.Keys) {
+                        $childProperties = $definition.properties
+                        $sectionContent = Set-DefinitionSection -TemplateFileContent $TemplateFileContent -Properties $childProperties -ParentName $paramIdentifier -ParentIdentifierLink $paramIdentifierLink -ColumnsInOrder $ColumnsInOrder
+                        $listSectionContent += $sectionContent
+                    }
+                    if ($definition.additionalProperties.Keys) {
+                        $childProperties = $definition.additionalProperties
+                        $formattedProperties = @{ '>Any_other_property<' = $childProperties }
+                        $sectionContent = Set-DefinitionSection -TemplateFileContent $TemplateFileContent -Properties $formattedProperties -ParentName $paramIdentifier -ParentIdentifierLink $paramIdentifierLink -ColumnsInOrder $ColumnsInOrder
+                        $listSectionContent += $sectionContent
+                    }
                 }
             }
         }
@@ -434,7 +532,6 @@ Update the 'outputs' section of the given readme file
 
 .DESCRIPTION
 Update the 'outputs' section of the given readme file
-The section is added at the end if it does not exist
 
 .PARAMETER TemplateFileContent
 Mandatory. The template file content object to crawl data from
@@ -465,7 +562,10 @@ function Set-OutputsSection {
     )
 
     # Process content
-    if ($TemplateFileContent.outputs.Values.metadata) {
+    if (-not $TemplateFileContent.outputs) {
+        # no outputs in the template
+        $SectionContent = '_None_'
+    } elseif ($TemplateFileContent.outputs.Values.metadata) {
         # Template has output descriptions
         $SectionContent = [System.Collections.ArrayList]@(
             '| Output | Type | Description |',
@@ -496,6 +596,149 @@ function Set-OutputsSection {
 
 <#
 .SYNOPSIS
+Update the 'functions' section of the given readme file
+
+.DESCRIPTION
+Update the 'functions' section of the given readme file
+
+.PARAMETER TemplateFileContent
+Mandatory. The template file content object to crawl data from
+
+.PARAMETER ReadMeFileContent
+Mandatory. The readme file content array to update
+
+.PARAMETER SectionStartIdentifier
+Optional. The identifier of the 'functions' section. Defaults to '## Functions'
+
+.EXAMPLE
+Set-FunctionsSection -TemplateFileContent @{ resource = @{}; ... } -ReadMeFileContent @('# Title', '', '## Section 1', ...)
+
+Update the given readme file's 'Functions' section based on the given template file content
+#>
+function Set-FunctionsSection {
+
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [hashtable] $TemplateFileContent,
+
+        [Parameter(Mandatory)]
+        [object[]] $ReadMeFileContent,
+
+        [Parameter(Mandatory = $false)]
+        [string] $SectionStartIdentifier = '## Exported functions'
+    )
+
+    # Process content
+    $noFunctions = -not $TemplateFileContent.functions
+    $noExportedFunctions = $templateFileContent.functions.members.Values.metadata.'__bicep_export!' -notcontains 'True'
+
+    if ($noFunctions -or $noExportedFunctions) {
+        # no exported/available functions in the template
+        return $ReadMeFileContent
+    } elseif ($TemplateFileContent.functions.members.Values.metadata) {
+        # Template has function descriptions
+        $SectionContent = [System.Collections.ArrayList]@(
+            '| Function | Description |',
+            '| :-- | :-- |'
+        )
+        foreach ($functionName in ($templateFileContent.functions.members.Keys | Sort-Object -Culture 'en-US')) {
+            $function = $TemplateFileContent.functions.members[$functionName]
+            $description = $function.metadata.description.Replace("`r`n", '<p>').Replace("`n", '<p>')
+            $SectionContent += ("| ``{0}`` | {1} |" -f $functionName, $description)
+        }
+    } else {
+        $SectionContent = [System.Collections.ArrayList]@(
+            '| Function | Description |',
+            '| :-- | :-- |'
+        )
+        foreach ($functionName in ($templateFileContent.functions.members.Keys | Sort-Object -Culture 'en-US')) {
+            $SectionContent += ("| ``{0}`` |" -f $functionName)
+        }
+    }
+
+    # Build result
+    if ($PSCmdlet.ShouldProcess('Original file with new functions content', 'Merge')) {
+        $updatedFileContent = Merge-FileWithNewContent -oldContent $ReadMeFileContent -newContent $SectionContent -SectionStartIdentifier $SectionStartIdentifier -contentType 'nextH2'
+    }
+    return $updatedFileContent
+}
+
+<#
+.SYNOPSIS
+Update the 'Data Collection' section of the given readme file
+
+.DESCRIPTION
+Update the 'Data Collection' section of the given readme file
+
+.PARAMETER ReadMeFileContent
+Mandatory. The readme file content array to update
+
+.PARAMETER SectionStartIdentifier
+Optional. The identifier of the section. Defaults to '## Data Collection'
+
+.PARAMETER PreLoadedContent
+Optional. Pre-Loaded content. May be used to reuse the same data for multiple invocations. For example:
+@{
+    TelemetryFileContent = @() // Optional. The text of the telemetry notice to add to each readme.
+}
+
+.EXAMPLE
+Set-DataCollectionSection -ReadMeFileContent @('# Title', '', '## Section 1', ...)
+
+Update the given readme file's 'Data Collection' section
+#>
+function Set-DataCollectionSection {
+
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [hashtable] $TemplateFileContent,
+
+        [Parameter(Mandatory)]
+        [object[]] $ReadMeFileContent,
+
+        [Parameter(Mandatory = $false)]
+        [hashtable] $PreLoadedContent = @{},
+
+        [Parameter(Mandatory = $false)]
+        [string] $SectionStartIdentifier = '## Data Collection'
+    )
+
+    if ($TemplateFileContent.parameters.Keys -notcontains 'enableTelemetry') {
+        # no telemetry in the template
+        return $ReadMeFileContent
+    }
+
+    # Load content, if required
+    if ($PreLoadedContent.Keys -notcontains 'TelemetryFileContent' -or -not $PreLoadedContent['TelemetryFileContent']) {
+
+        $telemetryUrl = 'https://aka.ms/avm/static/telemetry'
+        try {
+            $rawResponse = Invoke-WebRequest -Uri $telemetryUrl
+            if (($rawResponse.Headers['Content-Type'] | Out-String) -like '*text/plain*') {
+                $telemetryFileContent = $rawResponse.Content -split '\n'
+            } else {
+                Write-Warning "Failed to fetch telemetry information from [$telemetryUrl]." # Incorrect Url (e.g., points to HTML)
+                return $ReadMeFileContent
+            }
+        } catch {
+            Write-Warning "Failed to fetch telemetry information from [$telemetryUrl]." # Invalid url
+            return $ReadMeFileContent
+        }
+    } else {
+        $telemetryFileContent = $PreLoadedContent.TelemetryFileContent
+    }
+
+    # Build result
+    if ($PSCmdlet.ShouldProcess('Original file with new output content', 'Merge')) {
+        $updatedFileContent = Merge-FileWithNewContent -oldContent $ReadMeFileContent -newContent $telemetryFileContent -SectionStartIdentifier $SectionStartIdentifier -contentType 'nextH2'
+    }
+    return $updatedFileContent
+}
+
+<#
+.SYNOPSIS
 Add module references (cross-references) to the module's readme
 
 .DESCRIPTION
@@ -516,11 +759,14 @@ Mandatory. The readme file content array to update
 .PARAMETER SectionStartIdentifier
 Optional. The identifier of the 'outputs' section. Defaults to '## Cross-referenced modules'
 
-.PARAMETER CrossReferencedModuleList
-Required. The Cross Module References to consider when refreshing the readme.
+.PARAMETER PreLoadedContent
+Optional. Pre-Loaded content. May be used to reuse the same data for multiple invocations. For example:
+@{
+    CrossReferencedModuleList = @{} // Optional. Cross Module References to consider when refreshing the readme. Can be provided to speed up the generation. If not provided, is fetched by this script.
+}
 
 .EXAMPLE
-Set-CrossReferencesSection -ModuleRoot 'C:/key-vault/vault' -FullModuleIdentifier 'key-vault/vault' -TemplateFileContent @{ resource = @{}; ... } -ReadMeFileContent @('# Title', '', '## Section 1', ...) -CrossReferencedModuleList @{}
+Set-CrossReferencesSection -ModuleRoot 'C:/key-vault/vault' -FullModuleIdentifier 'key-vault/vault' -TemplateFileContent @{ resource = @{}; ... } -ReadMeFileContent @('# Title', '', '## Section 1', ...) -PreLoadedContent @{ CrossReferencedModuleList = @{ ... } }
 Update the given readme file's 'Cross-referenced modules' section based on the given template file content
 #>
 function Set-CrossReferencesSection {
@@ -539,39 +785,45 @@ function Set-CrossReferencesSection {
         [Parameter(Mandatory)]
         [object[]] $ReadMeFileContent,
 
-        [Parameter(Mandatory)]
-        [hashtable] $CrossReferencedModuleList,
+        [Parameter(Mandatory = $false)]
+        [hashtable] $PreLoadedContent = @{},
 
         [Parameter(Mandatory = $false)]
         [string] $SectionStartIdentifier = '## Cross-referenced modules'
     )
 
+    # Load content, if required
+    if ($PreLoadedContent.Keys -notcontains 'CrossReferencedModuleList') {
+        $CrossReferencedModuleList = Get-CrossReferencedModuleList
+    } else {
+        $CrossReferencedModuleList = $PreLoadedContent.CrossReferencedModuleList
+    }
+
+    $dependencies = $CrossReferencedModuleList[$FullModuleIdentifier]
+
+    if (-not $dependencies -or ($dependencies -and -not $dependencies['localPathReferences'] -and -not $dependencies['remoteReferences'])) {
+        # no cross references in the template
+        return $ReadMeFileContent
+    }
+
     # Process content
     $SectionContent = [System.Collections.ArrayList]@(
-        'This section gives you an overview of all local-referenced module files (i.e., other CARML modules that are referenced in this module) and all remote-referenced files (i.e., Bicep modules that are referenced from a Bicep Registry or Template Specs).',
+        'This section gives you an overview of all local-referenced module files (i.e., other modules that are referenced in this module) and all remote-referenced files (i.e., Bicep modules that are referenced from a Bicep Registry or Template Specs).',
         '',
         '| Reference | Type |',
         '| :-- | :-- |'
     )
 
-    $dependencies = $CrossReferencedModuleList[$FullModuleIdentifier]
-
     if ($dependencies.Keys -contains 'localPathReferences' -and $dependencies['localPathReferences']) {
-        foreach ($reference in ($dependencies['localPathReferences'] | Sort-Object)) {
+        foreach ($reference in ($dependencies['localPathReferences'] | Sort-Object -Culture 'en-US')) {
             $SectionContent += ("| ``{0}`` | {1} |" -f $reference, 'Local reference')
         }
     }
 
     if ($dependencies.Keys -contains 'remoteReferences' -and $dependencies['remoteReferences']) {
-        foreach ($reference in ($dependencies['remoteReferences'] | Sort-Object)) {
+        foreach ($reference in ($dependencies['remoteReferences'] | Sort-Object -Culture 'en-US')) {
             $SectionContent += ("| ``{0}`` | {1} |" -f $reference, 'Remote reference')
         }
-    }
-
-    if ($SectionContent.Count -eq 4) {
-        # No content was added, adding placeholder
-        $SectionContent = @('_None_')
-
     }
 
     # Build result
@@ -600,13 +852,13 @@ Mandatory. A list of all top-level (i.e. non-nested) parameter names
 Mandatory. A list of all required top-level (i.e. non-nested) parameter names
 
 .EXAMPLE
-Add-BicepParameterTypeComment -AllParametersList @('name', 'lock') -RequiredParametersList @('name') -BicepParams "name: 'carml'\nlock: 'CanNotDelete'"
+Add-BicepParameterTypeComment -AllParametersList @('name', 'lock') -RequiredParametersList @('name') -BicepParams "name: 'module'\nlock: 'CanNotDelete'"
 
 Add type comments to given bicep params string, using one required parameter 'name'. Would return:
 
 '
     // Required parameters
-    name: 'carml'
+    name: 'module'
     // Non-required parameters
     lock: {
         kind: 'CanNotDelete'
@@ -680,12 +932,12 @@ Mandatory. The JSON parameters block to process (ideally already without 'value'
 Mandatory. A list of all required top-level (i.e. non-nested) parameter names
 
 .EXAMPLE
-Get-OrderedParametersJSON -RequiredParametersList @('name') -ParametersJSON '{ "lock": "CanNotDelete","name": "carml" }'
+Get-OrderedParametersJSON -RequiredParametersList @('name') -ParametersJSON '{ "lock": "CanNotDelete","name": "module" }'
 
 Order the given JSON object alphabetically. Would result into:
 
 @{
-    name: 'carml'
+    name: 'module'
     lock: {
         kind: 'CanNotDelete'
         name: 'myCustomLockName'
@@ -738,7 +990,7 @@ Mandatory. The parameter JSON object to process
 Mandatory. A list of all required top-level (i.e. non-nested) parameter names
 
 .EXAMPLE
-Build-OrderedJSONObject -RequiredParametersList @('name') -ParametersJSON '{ "lock": { "value": "CanNotDelete" }, "name": { "value": "carml" } }'
+Build-OrderedJSONObject -RequiredParametersList @('name') -ParametersJSON '{ "lock": { "value": "CanNotDelete" }, "name": { "value": "module" } }'
 
 Build a formatted Parameter-JSON object with one required parameter. Would result into:
 
@@ -748,7 +1000,7 @@ Build a formatted Parameter-JSON object with one required parameter. Would resul
     "parameters": {
         // Required parameters
         "name": {
-            "value": "carml"
+            "value": "module"
         },
         // Non-required parameters
         "lock": {
@@ -825,13 +1077,13 @@ Mandatory. The Bicep parameter block to process
 Mandatory. The Path of the file containing the param block
 
 .EXAMPLE
-ConvertTo-FormattedJSONParameterObject -BicepParamBlock "name: 'carml'\nlock: 'CanNotDelete'" -CurrentFilePath 'c:/main.test.bicep'
+ConvertTo-FormattedJSONParameterObject -BicepParamBlock "name: 'module'\nlock: 'CanNotDelete'" -CurrentFilePath 'c:/main.test.bicep'
 
-Convert the Bicep string "name: 'carml'\nlock: 'CanNotDelete'" into a parameter JSON object. Would result into:
+Convert the Bicep string "name: 'module'\nlock: 'CanNotDelete'" into a parameter JSON object. Would result into:
 
 @{
     lock = @{
-        value = 'carml'
+        value = 'module'
     }
     lock = @{
         value = 'CanNotDelete'
@@ -878,6 +1130,11 @@ function ConvertTo-FormattedJSONParameterObject {
 
         $line = $paramInJSONFormatArray[$index]
 
+        if ($line -match '^\s*\/\/.*') {
+            # Line is comment
+            continue
+        }
+
         # [2.4] Syntax:
         # - Everything left of a leftest ':' should be wrapped in quotes (as a parameter name is always a string)
         # - However, we don't want to accidently catch something like "CriticalAddonsOnly=true:NoSchedule"
@@ -885,34 +1142,66 @@ function ConvertTo-FormattedJSONParameterObject {
         $line = $pattern.replace($line, '"$1":', 1)
 
         # [2.5] Syntax: Replace Bicep resource ID references
-        $mayHaveValue = $line -match '\s*.+:\s+'
+        $mayHaveValue = $line -match '^\s*.+?:\s+'
         if ($mayHaveValue) {
 
-            $lineValue = ($line -split '\s*.+:\s+')[1].Trim() # i.e. optional spaces, followed by a name ("xzy"), followed by ':', folowed by at least a space
+            $lineValue = ($line -split '^\s*.+?:\s+')[1].Trim() # i.e., optional spaces, followed by a name ("xzy"), followed by ':', folowed by at least a space
 
             # Individual checks
-            $isLineWithEmptyObjectValue = $line -match '^.+:\s*{\s*}\s*$' # e.g. test: {}
-            $isLineWithObjectPropertyReferenceValue = $lineValue -like '*.*' # e.g. resourceGroupResources.outputs.virtualWWANResourceId`
+            $isLineWithEmptyObjectValue = $line -match '^.+:\s*{\s*}\s*$' # e.g., test: {}
+            $isLineWithObjectPropertyReferenceValue = $lineValue -match '(?<=[^"])\b\.\b(?=[^"]*$)' # e.g., resourceGroupResources.outputs.virtualWWANResourceId, but not "domainName": "onmicrosoft.com"
             $isLineWithReferenceInLineKey = ($line -split ':')[0].Trim() -like '*.*'
-
-            $isLineWithStringValue = $lineValue -match '".+"' # e.g. "value"
-            $isLineWithFunction = $lineValue -match "^['|`"]{1}.*\$\{.+['|`"]{1}$|^['|`"]{0}[a-zA-Z\(]+\(.+" # e.g. (split(resourceGroupResources.outputs.recoveryServicesVaultResourceId, "/"))[4] or '${last(...)}' or last() or "test${environment()}"
+            $isLineWithStringNestedReference = $lineValue -match "['|`"]{1}.*\$\{.+" # e.g., "Download ${initializeSoftwareScriptName}"  or '${last(...)}'
+            $isLineWithStringValue = $lineValue -match '^".+"$' # e.g. "value"
+            $isLineWithFunction = $lineValue -match '^[a-zA-Z]+\(.+' # e.g., split(something)
             $isLineWithPlainValue = $lineValue -match '^\w+$' # e.g. adminPassword: password
-            $isLineWithPrimitiveValue = $lineValue -match '^\s*true|false|[0-9]+$' # e.g. isSecure: true
+            $isLineWithPrimitiveValue = $lineValue -match '^\s*true|false|[0-9]+$' # e.g., isSecure: true
+            $isLineContainingCondition = $lineValue -match '^\w+ [=!?|&]{2} .+\?.+\:.+$' # e.g., iteration == "init" ? "A" : "B"
 
-            # Combined checks
-            # In case of an output reference like '"virtualWanId": resourceGroupResources.outputs.virtualWWANResourceId' we'll only show "<virtualWanId>" (but NOT e.g. 'reference': {})
-            $isLineWithObjectPropertyReference = -not $isLineWithEmptyObjectValue -and -not $isLineWithStringValue -and $isLineWithObjectPropertyReferenceValue
-            # In case of a parameter/variable reference like 'adminPassword: password' we'll only show "<adminPassword>" (but NOT e.g. enableMe: true)
-            $isLineWithParameterOrVariableReferenceValue = $isLineWithPlainValue -and -not $isLineWithPrimitiveValue
-            # In case of any contained line like ''${resourceGroupResources.outputs.managedIdentityResourceId}': {}' we'll only show "managedIdentityResourceId: {}"
-            $isLineWithObjectReferenceKeyAndEmptyObjectValue = $isLineWithEmptyObjectValue -and $isLineWithReferenceInLineKey
-            # In case of any contained function like '"backupVaultResourceGroup": (split(resourceGroupResources.outputs.recoveryServicesVaultResourceId, "/"))[4]' we'll only show "<backupVaultResourceGroup>"
+            # Special case: Multi-line function
+            $isLineWithMultilineFunction = $lineValue -match '[a-zA-Z]+\s*\([^\)]*\){0}\s*$' # e.g., roleDefinitionIdOrName: subscriptionResourceId( \n 'Microsoft.Authorization/roleDefinitions', \n 'acdd72a7-3385-48ef-bd42-f606fba81ae7' \n )
+            if ($isLineWithMultilineFunction) {
+                # Search leading indent so that we can use it to identify at which line the function ends
+                $indent = ([regex]::Match($paramInJSONFormatArray[$index], '^(\s+)')).Captures.Groups[1].Value.Length
 
-            if ($isLineWithObjectPropertyReference -or $isLineWithFunction -or $isLineWithParameterOrVariableReferenceValue) {
+                $functionStartIndex = $index
+                $functionEndIndex = $functionStartIndex
+                do {
+                    $functionEndIndex++
+                } while ($paramInJSONFormatArray[$functionEndIndex] -match "^\s{$($indent+1),}" -and $functionEndIndex -lt $paramInJSONFormatArray.Count)
+
+                if ($functionEndIndex -eq $paramInJSONFormatArray.Count) {
+                    throw "End index of a multi-line function block for test file [$CurrentFilePath] not found."
+                }
+
+                # Overwrite the first line with a default value (i.e., "property": "<property>")
                 $line = '{0}: "<{1}>"' -f ($line -split ':')[0], ([regex]::Match(($line -split ':')[0], '"(.+)"')).Captures.Groups[1].Value
-            } elseif ($isLineWithObjectReferenceKeyAndEmptyObjectValue) {
-                $line = '"<{0}>": {1}' -f (($line -split ':')[0] -split '\.')[-1].TrimEnd('}"'), $lineValue
+
+                $linesOfFunction = $functionEndIndex - $functionStartIndex
+
+                # Nullify all but first line
+                for ($functionIndex = 1; $functionIndex -le $linesOfFunction; $functionIndex++) {
+                    $functionLineIndex = $index + $functionIndex
+                    $paramInJSONFormatArray[$functionLineIndex] = $null
+                }
+
+                # Increase index to skip the function lines
+                $index += $indexToIncrease
+            } else {
+                # Combined checks
+                # In case of an output reference like '"virtualWanId": resourceGroupResources.outputs.virtualWWANResourceId' we'll only show "<virtualWanId>" (but NOT e.g. 'reference': {})
+                $isLineWithObjectPropertyReference = -not $isLineWithEmptyObjectValue -and -not $isLineWithStringValue -and $isLineWithObjectPropertyReferenceValue
+                # In case of a parameter/variable reference like 'adminPassword: password' we'll only show "<adminPassword>" (but NOT e.g. enableMe: true)
+                $isLineWithParameterOrVariableReferenceValue = $isLineWithPlainValue -and -not $isLineWithPrimitiveValue
+                # In case of any contained line like ''${resourceGroupResources.outputs.managedIdentityResourceId}': {}' we'll only show "managedIdentityResourceId: {}"
+                $isLineWithObjectReferenceKeyAndEmptyObjectValue = $isLineWithEmptyObjectValue -and $isLineWithReferenceInLineKey
+                # In case of any contained function like '"backupVaultResourceGroup": (split(resourceGroupResources.outputs.recoveryServicesVaultResourceId, "/"))[4]' we'll only show "<backupVaultResourceGroup>"
+
+                if ($isLineWithObjectPropertyReference -or $isLineWithStringNestedReference -or $isLineWithFunction -or $isLineWithParameterOrVariableReferenceValue -or $isLineContainingCondition) {
+                    $line = '{0}: "<{1}>"' -f ($line -split ':')[0], ([regex]::Match(($line -split ':')[0], '"(.+)"')).Captures.Groups[1].Value
+                } elseif ($isLineWithObjectReferenceKeyAndEmptyObjectValue) {
+                    $line = '"<{0}>": {1}' -f (($line -split ':')[0] -split '\.')[-1].TrimEnd('}"'), $lineValue
+                }
             }
         } else {
             if ($line -notlike '*"*"*' -and $line -like '*.*') {
@@ -921,25 +1210,43 @@ function ConvertTo-FormattedJSONParameterObject {
             } elseif ($line -match '^\s*[a-zA-Z]+\s*$') {
                 # If there is simply only a value such as a variable reference, we'll wrap it as a string to replace. For example a reference of a variable `addressPrefix` will be replaced with `"<addressPrefix>"`
                 $line = '"<{0}>"' -f $line.Trim()
+            } elseif ($line -match "['|`"]{1}.*\$\{.+") {
+                # If the line contains a string with a reference, we're replacing the reference with a placeholder. For example "pwsh \"${initializeSoftwareScriptName}\"" would only show "pwsh <value>"
+                $line = $line -replace '\$\{.+\}', '<value>'
             }
         }
-
 
         $paramInJSONFormatArray[$index] = $line
     }
 
-    # [2.6] Syntax: Add comma everywhere unless:
+    # [2.6] Remove empty lines
+    $paramInJSONFormatArray = $paramInJSONFormatArray | Where-Object { $_ }
+
+    # [2.7] Syntax: Add comma everywhere unless:
     # - the current line has an opening 'object: {' or 'array: [' character
-    # - the line after the current line has a closing 'object: {' or 'array: [' character
+    # - the line after the current line has a closing 'object: }' or 'array: ]' character
     # - it's the last closing bracket
+    # - is a comment
     for ($index = 0; $index -lt $paramInJSONFormatArray.Count; $index++) {
-        if (($paramInJSONFormatArray[$index] -match '[\{|\[]\s*$') -or (($index -lt $paramInJSONFormatArray.Count - 1) -and $paramInJSONFormatArray[$index + 1] -match '^\s*[\]|\}]\s*$') -or ($index -eq $paramInJSONFormatArray.Count - 1)) {
+        $isOpeningObjectOrArray = $paramInJSONFormatArray[$index] -match '[\{|\[]\s*$'
+        $nextLineIsClosingObjectOrArray = ($index -lt $paramInJSONFormatArray.Count - 1) -and $paramInJSONFormatArray[$index + 1] -match '^\s*[\]|\}]\s*$'
+        $isLastLine = $index -eq $paramInJSONFormatArray.Count - 1
+        $isComment = $paramInJSONFormatArray[$index] -match '^\s*\/\/.*'
+        if ($isOpeningObjectOrArray -or $nextLineIsClosingObjectOrArray -or $isLastLine -or $isComment) {
             continue
         }
-        $paramInJSONFormatArray[$index] = '{0},' -f $paramInJSONFormatArray[$index].Trim()
+
+        if ( $paramInJSONFormatArray[$index] -match '(?<![:\/])\/\/.*$' ) {
+            # Has inline comment (i.e., a situation where you have '//' not enclosed by quotes)
+            $lineElements = $paramInJSONFormatArray[$index] -split '(?<![:\/])\/\/.*$'
+            $paramInJSONFormatArray[$index] = '{0}, // {1}' -f $lineElements[0].Trim(), $lineElements[1].Trim()
+
+        } else {
+            $paramInJSONFormatArray[$index] = '{0},' -f $paramInJSONFormatArray[$index].Trim()
+        }
     }
 
-    # [2.7] Format the final JSON string to an object to enable processing
+    # [2.8] Format the final JSON string to an object to enable processing
     try {
         $paramInJsonFormatObject = $paramInJSONFormatArray | Out-String | ConvertFrom-Json -AsHashtable -Depth 99 -ErrorAction 'Stop'
     } catch {
@@ -971,13 +1278,13 @@ Mandatory. The parameter JSON object to process.
 Mandatory. A list of all required top-level (i.e. non-nested) parameter names
 
 .EXAMPLE
-ConvertTo-FormattedBicep -RequiredParametersList @('name') -JSONParameters @{ lock = @{ value = 'carml' }; lock = @{ value = 'CanNotDelete' } }
+ConvertTo-FormattedBicep -RequiredParametersList @('name') -JSONParameters @{ lock = @{ value = 'module' }; lock = @{ value = 'CanNotDelete' } }
 
 Convert the given JSONParameters object with one required parameter to a formatted Bicep object. Would result into:
 
 '
     // Required parameters
-    name: 'carml'
+    name: 'module'
     // Non-required parameters
     lock: {
         kind: 'CanNotDelete'
@@ -1114,7 +1421,8 @@ function Set-UsageExamplesSection {
         [string] $SectionStartIdentifier = '## Usage examples'
     )
 
-    $brLink = Get-PrivateRegistryRepositoryName -TemplateFilePath $TemplateFilePath
+    $brLink = Get-BRMRepositoryName -TemplateFilePath $TemplateFilePath
+    $targetVersion = '<version>'
 
     # Process content
     $SectionContent = [System.Collections.ArrayList]@(
@@ -1122,7 +1430,7 @@ function Set-UsageExamplesSection {
         '',
         '>**Note**: Each example lists all the required parameters first, followed by the rest - each in alphabetical order.',
         '',
-        ('>**Note**: To reference the module, please use the following syntax `br:{0}:1.0.0`.' -f $brLink),
+        ('>**Note**: To reference the module, please use the following syntax `br/public:{0}:{1}`.' -f $brLink, $targetVersion),
         ''
     )
 
@@ -1144,11 +1452,15 @@ function Set-UsageExamplesSection {
         $moduleNameCamelCase = $First.Tolower() + (Get-Culture).TextInfo.ToTitleCase($Rest) -Replace '-'
     }
 
-    $testFilePaths = (Get-ChildItem -Path $ModuleRoot -Recurse -Filter 'main.test.bicep').FullName | Sort-Object
+    $testFilePaths = (Get-ChildItem -Path $ModuleRoot -Recurse -Filter 'main.test.bicep').FullName | Sort-Object -Culture 'en-US'
 
-    $RequiredParametersList = $TemplateFileContent.parameters.Keys | Where-Object {
-        Get-IsParameterRequired -TemplateFileContent $TemplateFileContent -Parameter $TemplateFileContent.parameters[$_]
-    } | Sort-Object
+    if ($TemplateFileContent.parameters.Count -gt 0) {
+        $RequiredParametersList = $TemplateFileContent.parameters.Keys | Where-Object {
+            Get-IsParameterRequired -TemplateFileContent $TemplateFileContent -Parameter $TemplateFileContent.parameters[$_]
+        } | Sort-Object -Culture 'en-US'
+    } else {
+        $RequiredParametersList = @()
+    }
 
     ############################
     ##   Process test files   ##
@@ -1157,13 +1469,20 @@ function Set-UsageExamplesSection {
     # Prepare data (using thread-safe multithreading) to consume later
     $buildTestFileMap = [System.Collections.Concurrent.ConcurrentDictionary[string, object]]::new()
     $testFilePaths | ForEach-Object -Parallel {
-        $folderName = Split-Path (Split-Path -Path $_) -Leaf
-        $buildTemplate = (bicep build $_ --stdout 2>$null) | ConvertFrom-Json -AsHashtable
-
         $dict = $using:buildTestFileMap
-        $null = $dict.TryAdd($folderName, $buildTemplate)
+
+        $folderName = Split-Path (Split-Path -Path $_) -Leaf
+        $builtTemplate = (bicep build $_ --stdout 2>$null) | Out-String
+
+        if ([String]::IsNullOrEmpty($builtTemplate)) {
+            throw "Failed to build template [$_]. Try running the command ``bicep build $_ --stdout`` locally for troubleshooting. Make sure you have the latest Bicep CLI installed."
+        }
+        $templateHashTable = ConvertFrom-Json $builtTemplate -AsHashtable
+
+        $null = $dict.TryAdd($folderName, $templateHashTable)
     }
 
+    # Process data
     $pathIndex = 1
     $usageExampleSectionHeaders = @()
     $testFilesContent = @()
@@ -1210,87 +1529,145 @@ function Set-UsageExamplesSection {
         #   Prepare Bicep to JSON   #
         # ------------------------- #
 
-        # [1/6] Search for the relevant parameter start & end index
-        $bicepTestStartIndex = ($rawContentArray | Select-String ("^module testDeployment '..\/.*main.bicep' = ") | ForEach-Object { $_.LineNumber - 1 })[0]
+        $isModuleDeploymentRegex = "^module testDeployment '..\/.*main.bicep' = "
 
-        $bicepTestEndIndex = $bicepTestStartIndex
-        do {
-            $bicepTestEndIndex++
-        } while ($rawContentArray[$bicepTestEndIndex] -notin @('}', '}]'))
+        if ($rawContentArray -match $isModuleDeploymentRegex) {
+            # Classic module deployment
 
-        $rawBicepExample = $rawContentArray[$bicepTestStartIndex..$bicepTestEndIndex]
+            # [1/6] Search for the relevant parameter start & end index
+            $bicepTestStartIndex = ($rawContentArray | Select-String ("^module testDeployment '..\/.*main.bicep' = ") | ForEach-Object { $_.LineNumber - 1 })[0]
 
-        if ($rawBicepExample[-1] -eq '}]') {
-            $rawBicepExample[-1] = '}'
-        }
+            $bicepTestEndIndex = $bicepTestStartIndex
+            do {
+                $bicepTestEndIndex++
+            } while ($rawContentArray[$bicepTestEndIndex] -notin @('}', '}]', ']') -and $bicepTestEndIndex -lt $rawContentArray.Count)
 
-        # [2/6] Replace placeholders
-        $serviceShort = ([regex]::Match($rawContent, "(?m)^param serviceShort string = '(.+)'\s*$")).Captures.Groups[1].Value
+            if ($bicepTestEndIndex -eq $rawContentArray.Count) {
+                throw "End index of test block for test file [$testFilePath] not found."
+            }
 
-        $rawBicepExampleString = ($rawBicepExample | Out-String)
-        $rawBicepExampleString = $rawBicepExampleString -replace '\$\{serviceShort\}', $serviceShort
-        $rawBicepExampleString = $rawBicepExampleString -replace '\$\{namePrefix\}[-|\.|_]?', '' # Replacing with empty to not expose prefix and avoid potential deployment conflicts
-        $rawBicepExampleString = $rawBicepExampleString -replace '(?m):\s*location\s*$', ': ''<location>'''
-        $rawBicepExampleString = $rawBicepExampleString -replace '-\$\{iteration\}', ''
+            $rawBicepExample = $rawContentArray[$bicepTestStartIndex..$bicepTestEndIndex]
 
-        # [3/6] Format header, remove scope property & any empty line
-        $rawBicepExample = $rawBicepExampleString -split '\n'
-        $rawBicepExample[0] = "module $moduleNameCamelCase 'br:$($brLink):1.0.0' = {"
-        $rawBicepExample = $rawBicepExample | Where-Object { $_ -notmatch 'scope: *' } | Where-Object { -not [String]::IsNullOrEmpty($_) }
-        # [4/6] Extract param block
-        $rawBicepExampleArray = $rawBicepExample -split '\n'
-        $moduleDeploymentPropertyIndent = ([regex]::Match($rawBicepExampleArray[1], '^(\s+).*')).Captures.Groups[1].Value.Length
-        $paramsStartIndex = ($rawBicepExampleArray | Select-String ("^[\s]{$moduleDeploymentPropertyIndent}params:[\s]*\{") | ForEach-Object { $_.LineNumber - 1 })[0] + 1
-        if ($rawBicepExampleArray[$paramsStartIndex].Trim() -ne '}') {
-            # Handle case where param block is empty
-            $paramsEndIndex = ($rawBicepExampleArray[($paramsStartIndex + 1)..($rawBicepExampleArray.Count)] | Select-String "^[\s]{$moduleDeploymentPropertyIndent}\}" | ForEach-Object { $_.LineNumber - 1 })[0] + $paramsStartIndex
-            $paramBlock = ($rawBicepExampleArray[$paramsStartIndex..$paramsEndIndex] | Out-String).TrimEnd()
-        } else {
-            $paramBlock = ''
-            $paramsEndIndex = $paramsStartIndex
-        }
-
-        # [5/6] Convert Bicep parameter block to JSON parameter block to enable processing
-        $conversionInputObject = @{
-            BicepParamBlock = $paramBlock
-            CurrentFilePath = $testFilePath
-        }
-        $paramsInJSONFormat = ConvertTo-FormattedJSONParameterObject @conversionInputObject
-
-        # [6/6] Convert JSON parameters back to Bicep and order & format them
-        $conversionInputObject = @{
-            JSONParameters         = $paramsInJSONFormat
-            RequiredParametersList = $RequiredParametersList
-        }
-        $bicepExample = ConvertTo-FormattedBicep @conversionInputObject
-
-        # --------------------- #
-        #   Add Bicep example   #
-        # --------------------- #
-        if ($addBicep) {
-
-            if ([String]::IsNullOrEmpty($paramBlock)) {
-                # Handle case where param block is empty
-                $formattedBicepExample = $rawBicepExample[0..($paramsStartIndex - 1)] + $rawBicepExample[($paramsEndIndex)..($rawBicepExample.Count)]
+            if (-not ($rawBicepExample | Select-String ('\s+params:.*'))) {
+                # Handle case where params are not provided
+                $paramsBlockArray = @()
             } else {
-                $formattedBicepExample = $rawBicepExample[0..($paramsStartIndex - 1)] + ($bicepExample -split '\n') + $rawBicepExample[($paramsEndIndex + 1)..($rawBicepExample.Count)]
+                # Extract params block out of the Bicep example
+                $paramsStartIndex = ($rawBicepExample | Select-String ('\s+params:.*') | ForEach-Object { $_.LineNumber - 1 })[0]
+                $paramsIndent = ($rawBicepExample[$paramsStartIndex] | Select-String '(\s+).*').Matches.Groups[1].Length
+
+
+                # Handle case where params are empty
+                if ($rawBicepExample[$paramsStartIndex] -match '^.*params:\s*\{\s*\}\s*$') {
+                    $paramsBlockArray = @()
+                } else {
+                    # Handle case where params are provided
+                    $paramsEndIndex = $paramsStartIndex
+                    do {
+                        $paramsEndIndex++
+                    } while ($rawBicepExample[$paramsEndIndex] -notMatch "^\s{$paramsIndent}\}" -and
+                        $rawBicepExample[$paramsEndIndex] -notMatch "^\s{$paramsIndent}\}\]" -and
+                        $rawBicepExample[$paramsEndIndex] -notMatch "^\s{$paramsIndent}\]" -and
+                        $paramsEndIndex -lt $rawBicepExample.Count)
+
+                    if ($paramsEndIndex -eq $rawBicepExample.Count) {
+                        throw "End index of 'params' block for test file [$testFilePath] not found."
+                    }
+
+                    $paramsBlock = $rawBicepExample[($paramsStartIndex + 1) .. ($paramsEndIndex - 1)]
+                    $paramsBlockArray = $paramsBlock -replace "^\s{$paramsIndent}" # Remove excess leading spaces
+
+                    # [2/6] Replace placeholders
+                    $serviceShort = ([regex]::Match($rawContent, "(?m)^param serviceShort string = '(.+)'\s*$")).Captures.Groups[1].Value
+
+                    $paramsBlockString = ($paramsBlockArray | Out-String)
+                    $paramsBlockString = $paramsBlockString -replace '\$\{serviceShort\}', $serviceShort
+                    $paramsBlockString = $paramsBlockString -replace '\$\{namePrefix\}[-|\.|_]?', '' # Replacing with empty to not expose prefix and avoid potential deployment conflicts
+                    $paramsBlockString = $paramsBlockString -replace '(?m):\s*location\s*$', ': ''<location>'''
+
+                    # [3/6] Format header, remove scope property & any empty line
+                    $paramsBlockArray = $paramsBlockString -split '\n' | Where-Object { -not [String]::IsNullOrEmpty($_) }
+                    $paramsBlockArray = $paramsBlockArray | ForEach-Object { "  $_" }
+                }
             }
 
-            # Remove any dependsOn as it it test specific
-            if ($detected = ($formattedBicepExample | Select-String "^\s{$moduleDeploymentPropertyIndent}dependsOn:\s*\[\s*$" | ForEach-Object { $_.LineNumber - 1 })) {
-                $dependsOnStartIndex = $detected[0]
+            # [5/6] Convert Bicep parameter block to JSON parameter block to enable processing
+            $conversionInputObject = @{
+                BicepParamBlock = ($paramsBlockArray | Out-String).TrimEnd()
+                CurrentFilePath = $testFilePath
+            }
+            $paramsInJSONFormat = ConvertTo-FormattedJSONParameterObject @conversionInputObject
 
-                # Find out where the 'dependsOn' ends
-                $dependsOnEndIndex = $dependsOnStartIndex
-                do {
-                    $dependsOnEndIndex++
-                } while ($formattedBicepExample[$dependsOnEndIndex] -notmatch '^\s*\]\s*$')
+            # [6/6] Convert JSON parameters back to Bicep and order & format them
+            $conversionInputObject = @{
+                JSONParameters         = $paramsInJSONFormat
+                RequiredParametersList = $RequiredParametersList
+            }
+            $bicepExample = ConvertTo-FormattedBicep @conversionInputObject
 
-                # Cut the 'dependsOn' block out
-                $formattedBicepExample = $formattedBicepExample[0..($dependsOnStartIndex - 1)] + $formattedBicepExample[($dependsOnEndIndex + 1)..($formattedBicepExample.Count)]
+            # --------------------- #
+            #   Add Bicep example   #
+            # --------------------- #
+            if ($addBicep) {
+
+                $formattedBicepExample = @(
+                    "module $moduleNameCamelCase 'br/public:$($brLink):$($targetVersion)' = {",
+                    "  name: '$($moduleNameCamelCase)Deployment'"
+                    '  params: {'
+                ) + $bicepExample +
+                @( '  }',
+                    '}'
+                )
+
+                # Build result
+                $testFilesContent += @(
+                    '',
+                    '<details>'
+                    ''
+                    '<summary>via Bicep module</summary>'
+                    ''
+                    '```bicep',
+                    ($formattedBicepExample | ForEach-Object { "$_" }).TrimEnd(),
+                    '```',
+                    '',
+                    '</details>',
+                    '<p>'
+                )
             }
 
-            # Build result
+            # -------------------- #
+            #   Add JSON example   #
+            # -------------------- #
+            if ($addJson) {
+
+                # [1/2] Get all parameters from the parameter object and order them recursively
+                $orderingInputObject = @{
+                    ParametersJSON         = $paramsInJSONFormat | ConvertTo-Json -Depth 99
+                    RequiredParametersList = $RequiredParametersList
+                }
+                $orderedJSONExample = Build-OrderedJSONObject @orderingInputObject
+
+                # [2/2] Create the final content block
+                $testFilesContent += @(
+                    '',
+                    '<details>'
+                    ''
+                    '<summary>via JSON Parameter file</summary>'
+                    ''
+                    '```json',
+                    $orderedJSONExample.Trim()
+                    '```',
+                    '',
+                    '</details>',
+                    '<p>'
+                )
+            }
+        } else {
+            # Non-module deployment (e.g., utility deployment)
+
+            # ----------------------------- #
+            #   Add non-formatted example   #
+            # ----------------------------- #
             $testFilesContent += @(
                 '',
                 '<details>'
@@ -1298,35 +1675,7 @@ function Set-UsageExamplesSection {
                 '<summary>via Bicep module</summary>'
                 ''
                 '```bicep',
-                    ($formattedBicepExample | ForEach-Object { "$_" }).TrimEnd(),
-                '```',
-                '',
-                '</details>',
-                '<p>'
-            )
-        }
-
-        # -------------------- #
-        #   Add JSON example   #
-        # -------------------- #
-        if ($addJson) {
-
-            # [1/2] Get all parameters from the parameter object and order them recursively
-            $orderingInputObject = @{
-                ParametersJSON         = $paramsInJSONFormat | ConvertTo-Json -Depth 99
-                RequiredParametersList = $RequiredParametersList
-            }
-            $orderedJSONExample = Build-OrderedJSONObject @orderingInputObject
-
-            # [2/2] Create the final content block
-            $testFilesContent += @(
-                '',
-                '<details>'
-                ''
-                '<summary>via JSON Parameter file</summary>'
-                ''
-                '```json',
-                $orderedJSONExample.Trim()
+                $rawContentArray,
                 '```',
                 '',
                 '</details>',
@@ -1456,16 +1805,27 @@ function Initialize-ReadMe {
 
     $moduleName = $TemplateFileContent.metadata.name
     $moduleDescription = $TemplateFileContent.metadata.description
-    $formattedResourceType = Get-SpecsAlignedResourceName -ResourceIdentifier $FullModuleIdentifier
-    $hasTests = (Get-ChildItem -Path (Split-Path $ReadMeFilePath) -Recurse -Filter 'main.test.bicep' -File -Force).count -gt 0
 
-    $inTemplateResourceType = (Get-NestedResourceList $TemplateFileContent).type | Select-Object -Unique | Where-Object {
-        $_ -match "^$formattedResourceType$"
-    }
+    if ($ReadMeFilePath -match 'avm.(?:res)') {
+        # Resource module
+        $formattedResourceType = Get-SpecsAlignedResourceName -ResourceIdentifier $FullModuleIdentifier
 
-    if (-not $inTemplateResourceType) {
-        Write-Warning "No resource type like [$formattedResourceType] found in template. Falling back to it as identifier."
-        $inTemplateResourceType = $formattedResourceType
+        $inTemplateResourceType = (Get-NestedResourceList $TemplateFileContent).type | Select-Object -Unique | Where-Object {
+            $_ -match "^$formattedResourceType$"
+        }
+
+        if ($inTemplateResourceType) {
+            $headerType = $inTemplateResourceType
+        } else {
+            Write-Warning "No resource type like [$formattedResourceType] found in template. Falling back to it as identifier."
+            $headerType = $formattedResourceType
+        }
+    } else {
+        # Non-resource modules always need a custom identifier
+        $parentIdentifierName, $childIdentifierName = $FullModuleIdentifier -Split '[\/|\\]', 2 # e.g. 'lz' & 'sub-vending'
+        $formattedParentIdentifierName = (Get-Culture).TextInfo.ToTitleCase(($parentIdentifierName -Replace '[^0-9A-Z]', ' ')) -Replace ' '
+        $formattedChildIdentifierName = (Get-Culture).TextInfo.ToTitleCase(($childIdentifierName -Replace '[^0-9A-Z]', ' ')) -Replace ' '
+        $headerType = "$formattedParentIdentifierName/$formattedChildIdentifierName"
     }
 
     # Orphaned readme existing?
@@ -1481,7 +1841,7 @@ function Initialize-ReadMe {
     }
 
     $initialContent = @(
-        "# $moduleName ``[$inTemplateResourceType]``",
+        "# $moduleName ``[$headerType]``",
         '',
         ((Test-Path $orphanedReadMeFilePath) ? $orphanedReadMeContent : $null),
         ((Test-Path $orphanedReadMeFilePath) ? '' : $null),
@@ -1489,17 +1849,6 @@ function Initialize-ReadMe {
         ((Test-Path $movedReadMeFilePath) ? '' : $null),
         $moduleDescription,
         ''
-        '## Resource Types',
-        ''
-        ($hasTests ? '## Usage examples' : $null),
-        ($hasTests ? '' : $null),
-        '## Parameters',
-        '',
-        '## Outputs',
-        '',
-        '## Cross-referenced modules',
-        '',
-        '## Notes'
     ) | Where-Object { $null -ne $_ } # Filter null values
     $readMeFileContent = $initialContent
 
@@ -1518,19 +1867,19 @@ Supports both ARM & bicep templates.
 .PARAMETER TemplateFilePath
 Mandatory. The path to the template to update
 
-.PARAMETER TemplateFileContent
-Optional. The template file content to process. If not provided, the template file content will be read from the TemplateFilePath file.
-Using this property is useful if you already compiled the bicep template before invoking this function and want to avoid re-compiling it.
-
 .PARAMETER ReadMeFilePath
 Optional. The path to the readme to update. If not provided assumes a 'README.md' file in the same folder as the template
 
 .PARAMETER SectionsToRefresh
 Optional. The sections to update. By default it refreshes all that are supported.
-Currently supports: 'Resource Types', 'Parameters', 'Outputs', 'Template references'
 
-.PARAMETER CrossReferencedModuleList
-Optional. Cross Module References to consider when refreshing the readme. Can be provided to speed up the generation. If not provided, is fetched by this script.
+.PARAMETER PreLoadedContent
+Optional. Pre-Loaded content. May be used to reuse the same data for multiple invocations. For example:
+@{
+    CrossReferencedModuleList = @{} // Optional. Cross Module References to consider when refreshing the readme. Can be provided to speed up the generation. If not provided, is fetched by this script.
+    TemplateFileContent       = @{} // Optional. The template file content to process. If not provided, the template file content will be read from the TemplateFilePath file.
+    TelemetryFileContent      = @() // Optional. The text of the telemetry notice to add to each readme.
+}
 
 .EXAMPLE
 Set-ModuleReadMe -TemplateFilePath 'C:\main.bicep'
@@ -1543,9 +1892,9 @@ Set-ModuleReadMe -TemplateFilePath 'C:/network/load-balancer/main.bicep' -Sectio
 Generate the Module ReadMe only for specific sections. Updates only the sections `Parameters` & `Outputs`. Other sections remain untouched.
 
 .EXAMPLE
-Set-ModuleReadMe -TemplateFilePath 'C:/network/load-balancer/main.bicep' -TemplateFileContent @{...}
+Set-ModuleReadMe -TemplateFilePath 'C:/network/load-balancer/main.bicep' -PreLoadedContent @{ TemplateFileContent = @{...} }
 
-(Re)Generate the readme file for template 'loadBalancer' based on the content provided in the TemplateFileContent parameter
+(Re)Generate the readme file for template 'loadBalancer' based on the content provided in the PreLoadedContent.TemplateFileContent parameter
 
 .EXAMPLE
 Set-ModuleReadMe -TemplateFilePath 'C:/network/load-balancer/main.bicep' -ReadMeFilePath 'C:/differentFolder'
@@ -1562,36 +1911,37 @@ function Set-ModuleReadMe {
 
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [string] $TemplateFilePath,
-
-        [Parameter(Mandatory = $false)]
-        [hashtable] $TemplateFileContent,
 
         [Parameter(Mandatory = $false)]
         [string] $ReadMeFilePath = (Join-Path (Split-Path $TemplateFilePath -Parent) 'README.md'),
 
         [Parameter(Mandatory = $false)]
-        [hashtable] $CrossReferencedModuleList = @{},
+        [hashtable] $PreLoadedContent = @{},
 
         [Parameter(Mandatory = $false)]
         [ValidateSet(
             'Resource Types',
             'Usage examples',
             'Parameters',
+            'Functions',
             'Outputs',
             'CrossReferences',
             'Template references',
-            'Navigation'
+            'Navigation',
+            'DataCollection'
         )]
         [string[]] $SectionsToRefresh = @(
             'Resource Types',
             'Usage examples',
             'Parameters',
+            'Functions',
             'Outputs',
             'CrossReferences',
             'Template references',
-            'Navigation'
+            'Navigation',
+            'DataCollection'
         )
     )
 
@@ -1601,7 +1951,8 @@ function Set-ModuleReadMe {
     . (Join-Path $PSScriptRoot 'helper' 'Get-IsParameterRequired.ps1')
     . (Join-Path $PSScriptRoot 'helper' 'Get-SpecsAlignedResourceName.ps1')
     . (Join-Path $PSScriptRoot 'helper' 'ConvertTo-OrderedHashtable.ps1')
-    . (Join-Path (Split-Path $PSScriptRoot -Parent) 'resourcePublish' 'Get-PrivateRegistryRepositoryName.ps1')
+    . (Join-Path $PSScriptRoot 'Get-BRMRepositoryName.ps1')
+    . (Join-Path $PSScriptRoot 'helper' 'Get-CrossReferencedModuleList.ps1')
 
     # Check template & make full path
     $TemplateFilePath = Resolve-Path -Path $TemplateFilePath -ErrorAction Stop
@@ -1610,12 +1961,15 @@ function Set-ModuleReadMe {
         throw "[$TemplateFilePath] is no valid file path."
     }
 
-    if (-not $TemplateFileContent) {
+    # Build template, if required
+    if ($PreLoadedContent.Keys -notcontains 'TemplateFileContent') {
         if ((Split-Path -Path $TemplateFilePath -Extension) -eq '.bicep') {
             $templateFileContent = bicep build $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
         } else {
             $templateFileContent = ConvertFrom-Json (Get-Content $TemplateFilePath -Encoding 'utf8' -Raw) -ErrorAction 'Stop' -AsHashtable
         }
+    } else {
+        $templateFileContent = $PreLoadedContent.TemplateFileContent
     }
 
     if (-not $templateFileContent) {
@@ -1623,7 +1977,7 @@ function Set-ModuleReadMe {
     }
 
     $moduleRoot = Split-Path $TemplateFilePath -Parent
-    $fullModuleIdentifier = $moduleRoot.Replace('\', '/').split('/modules/')[-1]
+    $fullModuleIdentifier = ($moduleRoot -split '[\/|\\]avm[\/|\\](res|ptn|utl)[\/|\\]')[2] -replace '\\', '/'
     # Custom modules are modules having the same resource type but different properties based on the name
     # E.g., web/site/config--appsetting vs web/site/config--authsettingv2
     $customModuleSeparator = '--'
@@ -1642,7 +1996,11 @@ function Set-ModuleReadMe {
     if ($match = $readMeFileContent | Select-String -Pattern '## Notes') {
         $startIndex = $match.LineNumber
 
-        $endIndex = $startIndex + 1
+        if ($readMeFileContent[($startIndex + 1)] -notlike '## *') {
+            $endIndex = $startIndex + 1
+        } else {
+            $endIndex = $startIndex
+        }
 
         while (-not (($endIndex + 1) -gt $readMeFileContent.count) -and $readMeFileContent[($endIndex + 1)] -notlike '## *') {
             $endIndex++
@@ -1698,6 +2056,16 @@ function Set-ModuleReadMe {
         $readMeFileContent = Set-ParametersSection @inputObject
     }
 
+    if ($SectionsToRefresh -contains 'Functions') {
+        # Handle [Functions] section
+        # ===========================
+        $inputObject = @{
+            ReadMeFileContent   = $readMeFileContent
+            TemplateFileContent = $templateFileContent
+        }
+        $readMeFileContent = Set-FunctionsSection @inputObject
+    }
+
     if ($SectionsToRefresh -contains 'Outputs') {
         # Handle [Outputs] section
         # ========================
@@ -1711,24 +2079,32 @@ function Set-ModuleReadMe {
     if ($SectionsToRefresh -contains 'CrossReferences') {
         # Handle [CrossReferences] section
         # ========================
-        if ($CrossReferencedModuleList.Count -eq 0) {
-            . (Join-Path (Get-Item $PSScriptRoot).Parent.Parent 'tools' 'Get-CrossReferencedModuleList.ps1')
-            $CrossReferencedModuleList = Get-CrossReferencedModuleList
-        }
         $inputObject = @{
-            ModuleRoot                = $ModuleRoot
-            FullModuleIdentifier      = $fullModuleIdentifier
-            ReadMeFileContent         = $readMeFileContent
-            TemplateFileContent       = $templateFileContent
-            CrossReferencedModuleList = $CrossReferencedModuleList
+            ModuleRoot           = $ModuleRoot
+            FullModuleIdentifier = $fullModuleIdentifier
+            ReadMeFileContent    = $readMeFileContent
+            TemplateFileContent  = $templateFileContent
+            PreLoadedContent     = $PreLoadedContent
         }
         $readMeFileContent = Set-CrossReferencesSection @inputObject
     }
+
     # Handle [Notes] section
     # ========================
     if ($notes) {
         $readMeFileContent += @( '' )
         $readMeFileContent += $notes
+    }
+
+    if ($SectionsToRefresh -contains 'DataCollection') {
+        # Handle [DataCollection] section
+        # ========================
+        $inputObject = @{
+            TemplateFileContent = $templateFileContent
+            ReadMeFileContent   = $readMeFileContent
+            PreLoadedContent    = $PreLoadedContent
+        }
+        $readMeFileContent = Set-DataCollectionSection @inputObject
     }
 
     if ($SectionsToRefresh -contains 'Navigation') {
