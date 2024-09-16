@@ -275,7 +275,7 @@ module resourceGroup 'br/public:modules/res/resources/resource-group:<version>' 
 | [`location`](#parameter-location) | string | Location of the Resource Group. It uses the deployment's location when not provided. |
 | [`lock`](#parameter-lock) | object | The lock settings of the service. |
 | [`roleAssignments`](#parameter-roleassignments) | array | Array of role assignments to create. |
-| [`tags`](#parameter-tags) | object | Tags of the storage account resource. |
+| [`tags`](#parameter-tags) | object | Object of tags to apply on the resource. |
 
 ### Parameter: `name`
 
@@ -435,7 +435,7 @@ The principal type of the assigned principal ID.
 
 ### Parameter: `tags`
 
-Tags of the storage account resource.
+Object of tags to apply on the resource.
 
 - Required: No
 - Type: object
