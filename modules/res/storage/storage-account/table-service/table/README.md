@@ -2,6 +2,7 @@
 
 This module deploys a Storage Account Table.
 
+
 ## Navigation
 
 - [Resource Types](#Resource-Types)

@@ -2,6 +2,7 @@
 
 This module deploys a Storage Account.
 
+
 ## Navigation
 
 - [Resource Types](#Resource-Types)
@@ -41,7 +42,7 @@ The following section provides usage examples for the module, which were used to
 
 >**Note**: Each example lists all the required parameters first, followed by the rest - each in alphabetical order.
 
->**Note**: To reference the module, please use the following syntax `br/public:avm/res/storage/storage-account:<version>`.
+>**Note**: To reference the module, please use the following syntax `br/public:modules/res/storage/storage-account:<version>`.
 
 - [Deploying as a Blob Storage](#example-1-deploying-as-a-blob-storage)
 - [Deploying as a Block Blob Storage](#example-2-deploying-as-a-block-blob-storage)
@@ -65,7 +66,7 @@ This instance deploys the module as a Blob Storage account.
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -121,7 +122,7 @@ This instance deploys the module as a Premium Block Blob Storage account.
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -177,7 +178,7 @@ This instance deploys the module with the minimum set of required parameters for
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -237,7 +238,7 @@ This instance deploys the module with the minimum set of required parameters.
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -299,7 +300,7 @@ This instance deploys the module saving all its secrets in a key vault.
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -363,7 +364,7 @@ This instance deploys the module with most of its features enabled.
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -1293,7 +1294,7 @@ This instance deploys the module with a NFS File Share.
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -1367,7 +1368,7 @@ This instance deploys the module using Customer-Managed-Keys using a System-Assi
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -1479,7 +1480,7 @@ This instance deploys the module using Customer-Managed-Keys using a User-Assign
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -1607,7 +1608,7 @@ This instance deploys the module as Storage Account version 1.
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -1659,7 +1660,7 @@ This instance deploys the module in alignment with the best-practices of the Azu
 <summary>via Bicep module</summary>
 
 ```bicep
-module storageAccount 'br/public:avm/res/storage/storage-account:<version>' = {
+module storageAccount 'br/public:modules/res/storage/storage-account:<version>' = {
   name: 'storageAccountDeployment'
   params: {
     // Required parameters
@@ -3534,6 +3535,8 @@ This is a generic module for deploying a Storage Account. Any customization for 
 The hierarchical namespace of the storage account (see parameter `enableHierarchicalNamespace`), can be only set at creation time.
 
 A list of supported resource types for the parameter ``networkAclsType.resourceAccessRules`` can be found [here](https://learn.microsoft.com/en-us/azure/storage/common/storage-network-security?tabs=azure-powershell#trusted-access-based-on-a-managed-identity). These can be used with or without wildcards (`*`) in the ``resourceId`` field.
+
+
 
 ## Data Collection
 

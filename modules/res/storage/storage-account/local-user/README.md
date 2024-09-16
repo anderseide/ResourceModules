@@ -2,6 +2,7 @@
 
 This module deploys a Storage Account Local User, which is used for SFTP authentication.
 
+
 ## Navigation
 
 - [Resource Types](#Resource-Types)
