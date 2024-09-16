@@ -29,7 +29,7 @@ on:
       - ".github/actions/templates/**"
       - ".github/workflows/module.template.module.yml"
       - ".github/workflows/module.res.resources.resource-group.yml"
-      - "module/res/resources/resource-group/**"
+      - "modules/res/resources/resource-group/**"
       - "utilities/pipelines/**"
       - "!utilities/pipelines/platform/**"
       - "!*/**/README.md"
