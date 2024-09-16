@@ -35,7 +35,7 @@ on:
       - "!*/**/README.md"
 
 env:
-  modulePath: "module/res/resources/resource-group"
+  modulePath: "modules/res/resources/resource-group"
   workflowPath: ".github/workflows/module.res.resources.resource-group.yml"
 
 concurrency:
