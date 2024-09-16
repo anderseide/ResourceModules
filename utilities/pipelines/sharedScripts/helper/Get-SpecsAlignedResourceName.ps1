@@ -60,17 +60,23 @@ function Get-SpecsAlignedResourceName {
         [string] $ResourceIdentifier,
 
         [Parameter(Mandatory = $false)]
-        [string] $SpecsFilePath = (Join-Path (Get-Item $PSScriptRoot).Parent.Parent.Parent 'src' 'apiSpecsList.json')
+        [string] $ApiSpecsFileUri = 'https://azure.github.io/Azure-Verified-Modules/governance/apiSpecsList.json'
     )
 
-    $specs = ConvertFrom-Json (Get-Content $specsFilePath -Raw) -AsHashtable
+    try {
+        $apiSpecs = Invoke-WebRequest -Uri $ApiSpecsFileUri
+        $specs = ConvertFrom-Json $apiSpecs.Content -AsHashtable
+    } catch {
+        Write-Warning "Failed to download API specs file from [$ApiSpecsFileUri]"
+        $specs = @{}
+    }
 
     $reducedResourceIdentifier = $ResourceIdentifier -replace '-'
 
     $rawProviderNamespace, $rawResourceType = $reducedResourceIdentifier -Split '[\/|\\]', 2 # e.g. 'keyvault' & 'vaults/keys'
 
     # Find provider namespace
-    $foundProviderNamespaceMatches = ($specs.Keys | Sort-Object) | Where-Object { $_ -like "Microsoft.$rawProviderNamespace*" }
+    $foundProviderNamespaceMatches = ($specs.Keys | Sort-Object -Culture 'en-US') | Where-Object { $_ -like "Microsoft.$rawProviderNamespace*" }
 
     if (-not $foundProviderNamespaceMatches) {
         $providerNamespace = "Microsoft.$rawProviderNamespace"
@@ -80,7 +86,7 @@ function Get-SpecsAlignedResourceName {
     }
 
     # Find resource type
-    $innerResourceTypes = $specs[$providerNamespace].Keys | Sort-Object
+    $innerResourceTypes = $specs[$providerNamespace].Keys | Sort-Object -Culture 'en-US'
 
     $rawResourceTypeElem = $rawResourceType -split '[\/|\\]'
     $reducedResourceTypeElements = $rawResourceTypeElem | ForEach-Object { Get-ReducedWordString -StringToReduce $_ }
@@ -95,7 +101,7 @@ function Get-SpecsAlignedResourceName {
     if ($resourceType.count -gt 1) {
         switch ($rawResourceType) {
             'service/api/policy' {
-                # Setting explicitely as both [apimanagement/service/apis/policies] & [apimanagement/service/apis/policy] exist in the specs and the later seem to have been an initial incorrect publish (only one API version exists)
+                # Setting explicitly as both [apimanagement/service/apis/policies] & [apimanagement/service/apis/policy] exist in the specs and the later seem to have been an initial incorrect publish (only one API version exists)
                 $resourceType = 'service/apis/policies'
             }
             Default {
@@ -110,7 +116,7 @@ function Get-SpecsAlignedResourceName {
         $resourceType = $innerResourceTypes | Where-Object { $_ -match $fallbackResourceTypeRegex }
         if (-not $resourceType) {
             # if we still don't find anything (because the resource type straight up does not exist, we fall back to itself as the default)
-            Write-Warning "Resource type [$rawResourceType] does not exist in the API / is custom. Falling back to it as default."
+            Write-Warning "Resource type [$rawResourceType] cannot be found or does not exist in the API specs / is custom. Falling back to it as default."
             $resourceType = $rawResourceType
         } else {
             Write-Warning ('Failed to find exact match between core matched resource types and [{0}]. Fallback on [{1}].' -f $rawResourceType, (Split-Path $rawResourceType -Parent))
