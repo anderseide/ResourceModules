@@ -1,27 +1,27 @@
-name: 'Get test files'
-description: 'Retrieve the test file paths of a given module'
+name: "Get parameter files"
+description: "Retrieve the parameter file paths of a given module"
 
 inputs:
   modulePath:
     description: "The path to the module's folder"
     required: true
   psRuleFilterRegex:
-    description: 'The regex used to filter PSRule compliant files'
+    description: "The regex used to filter PSRule compliant files"
     required: true
-    default: '(defaults|waf-aligned)'
+    default: "(defaults|waf-aligned)"
 
 outputs:
   moduleTestFilePaths:
-    description: 'The module test files to use for template evaluation'
+    description: "The module test files to use for template evaluation"
     value: ${{ steps.get-module-test-file-paths.outputs.moduleTestFilePaths }}
   psRuleModuleTestFilePaths:
-    description: 'The module test files to use for PSRule evaluation'
+    description: "The module test files to use for PSRule evaluation"
     value: ${{ steps.get-module-test-file-paths.outputs.psRuleModuleTestFilePaths }}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: 'Get module test file paths'
+    - name: "Get module test file paths"
       id: get-module-test-file-paths
       shell: pwsh
       run: |
@@ -42,8 +42,8 @@ runs:
         # Output values to be accessed by next jobs
         $deployCompressedOutput = $testFilePaths | ForEach-Object {
           @{
-            moduleTestFilePath = $_
-            moduleTestFileName = Split-Path (Split-Path $_) -Leaf
+            path = $_
+            name = Split-Path (Split-Path $_) -Leaf
           }
         } | ConvertTo-Json -Compress
 
@@ -65,8 +65,8 @@ runs:
         # Output values to be accessed by next jobs
         $psRuleCompressedOutput = $psRuleTestFilePaths | ForEach-Object {
           @{
-            moduleTestFilePath = $_
-            moduleTestFileName = Split-Path (Split-Path $_) -Leaf
+            path = $_
+            name = Split-Path (Split-Path $_) -Leaf
           }
         } | ConvertTo-Json -Compress
 

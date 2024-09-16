@@ -29,20 +29,27 @@ function Get-NestedResourceList {
         if ($TemplateFileContent.resources -is [System.Collections.Hashtable]) {
             # With the introduction of user defined types, a compiled template's resources are not part of an ordered hashtable instead of an array.
             $currLevelResources += $TemplateFileContent.resources.Keys | ForEach-Object {
-                $TemplateFileContent.resources[$_]
+                $elem = $TemplateFileContent.resources[$_]
+                $elem['identifier'] = $_
+                $elem
             } | Where-Object {
                 $_.existing -ne $true
             }
         } else {
             # Default array
-            $currLevelResources += $TemplateFileContent.resources
+            $currLevelResources += $TemplateFileContent.resources | ForEach-Object {
+                $_['identifier'] = $_.name
+                $_
+            } | Where-Object {
+                $_.existing -ne $true
+            }
         }
     }
     foreach ($resource in $currLevelResources) {
         $res += $resource
 
         if ($resource.type -eq 'Microsoft.Resources/deployments') {
-            if ($resource.properties.template.GetType().BaseType.Name -eq 'Hashtable') {
+            if ($resource.properties.template -is [System.Collections.Hashtable]) {
                 $res += Get-NestedResourceList -TemplateFileContent $resource.properties.template
             }
         } else {

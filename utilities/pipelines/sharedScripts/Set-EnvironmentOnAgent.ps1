@@ -63,7 +63,7 @@ function Install-CustomModule {
                 $alreadyInstalled = $alreadyInstalled | Where-Object { $_.Version -eq $Module.Version }
             } else {
                 # Get latest in case of multiple
-                $alreadyInstalled = ($alreadyInstalled | Sort-Object -Property Version -Descending)[0]
+                $alreadyInstalled = ($alreadyInstalled | Sort-Object -Culture 'en-US' -Property 'Version' -Descending)[0]
             }
             Write-Verbose ('Module [{0}] already installed with version [{1}]' -f $alreadyInstalled.Name, $alreadyInstalled.Version) -Verbose
             continue
@@ -164,21 +164,22 @@ function Set-EnvironmentOnAgent {
 
     # Bicep CLI is pre-installed on GitHub hosted runners.
     # https://github.com/actions/virtual-environments#available-environments
+    # Adding a step to explicitly install the latest Bicep CLI because there is
+    # always a delay in updating Bicep CLI in the job runner environments.
 
-    Write-Verbose 'Bicep CLI version:' -Verbose
+    Write-Verbose 'Preinstalled Bicep CLI version:' -Verbose
     bicep --version
-    <#
-    Write-Verbose ("Install bicep start") -Verbose
+
+    Write-Verbose ('Install latest Bicep CLI') -Verbose
     # Fetch the latest Bicep CLI binary
     curl -Lo bicep 'https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64'
-
     # Mark it as executable
     chmod +x ./bicep
-
-    # Add bicep to your PATH (requires admin)
+    # Add Bicep to your PATH (requires admin)
     sudo mv ./bicep /usr/local/bin/bicep
-    Write-Verbose ("Install bicep end") -Verbose
-    #>
+
+    Write-Verbose 'Bicep CLI version after install:' -Verbose
+    bicep --version
 
     ###############################
     ##   Install Extensions CLI   #
