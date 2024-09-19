@@ -1194,7 +1194,18 @@ Describe 'Governance tests' {
         $formattedEntry = $relativeModulePath -replace '\\', '\/'
         $moduleLine = $codeOwnersContent | Where-Object { $_ -match "^\s*\/$formattedEntry\/" }
 
-        $expectedEntry = '/{0}/ @Azure/{1}-module-owners-bicep @Azure/avm-module-reviewers-bicep' -f ($relativeModulePath -replace '\\', '/'), ($relativeModulePath -replace '-' -replace '[\\|\/]', '-')
+        $moduleArmTemplateFilePath = Join-Path $repoRootPath $relativeModulePath 'main.json'
+        $moduleArmTemplateContent = Get-Content $moduleArmTemplateFilePath | ConvertFrom-Json
+
+        $moduleOwner = $moduleArmTemplateContent.metadata.owner
+        $moduleReviewer = $moduleArmTemplateContent.metadata.reviewer
+
+        # If Module Owner is Azure/module-maintainers, set expected entry value to current expectations.
+        if ($moduleOwner -eq 'Azure/module-maintainers') {
+            $expectedEntry = '/{0}/ @Azure/{1}-module-owners-bicep @Azure/avm-module-reviewers-bicep' -f ($relativeModulePath -replace '\\', '/'), ($relativeModulePath -replace '-' -replace '[\\|\/]', '-')
+        } else {
+            $expectedEntry = '/{0}/ @{1} @{2}' -f ($relativeModulePath -replace '\\', '/'), $moduleOwner, $moduleReviewer
+        }
 
         # Line should exist
         $moduleLine | Should -Not -BeNullOrEmpty -Because "the module should be listed in the [CODEOWNERS](https://azure.github.io/Azure-Verified-Modules/specs/shared/#codeowners-file) file as [$expectedEntry]. Please ensure there is a forward slash (/) at the beginning and end of the module path at the start of the line."

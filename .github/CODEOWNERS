@@ -1,4 +1,4 @@
 *   @Azure/module-maintainers
 /modules/ptn/authorization/resource-role-assignment/ @Azure/modules-ptn-authorization-resourceroleassignment-module-owners-bicep @Azure/avm-module-reviewers-bicep
 /modules/res/resources/resource-group/ @Azure/modules-res-resources-resourcegroup-module-owners-bicep @Azure/avm-module-reviewers-bicep
-/modules/res/storage/storage-account/ @Azure/modules-res-storage-storageaccount-module-owners-bicep @Azure/avm-module-reviewers-bicep
+/modules/res/storage/storage-account/ @anderseide @anderseide
