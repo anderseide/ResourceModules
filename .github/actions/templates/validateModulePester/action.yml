@@ -73,6 +73,7 @@ runs:
             Container = New-PesterContainer -Path $testFiles -Data @{
               moduleFolderPaths = $moduleFolderPaths
               RepoRootPath      = $env:GITHUB_WORKSPACE
+              modulesRootFolder = 'modules'
             }
             PassThru  = $true
           }
@@ -95,6 +96,7 @@ runs:
           OutputFilePath    = Join-Path $env:GITHUB_WORKSPACE 'modules' 'Pester-output.md'
           GitHubRepository  = $env:GITHUB_REPOSITORY
           BranchName        = $env:GITHUB_REF
+          modulesRootFolder = 'modules'
         }
 
         Write-Verbose 'Invoke Pester formatting function with' -Verbose

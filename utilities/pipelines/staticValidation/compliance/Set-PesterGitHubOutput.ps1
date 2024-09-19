@@ -87,7 +87,10 @@ function Set-PesterGitHubOutput {
         [string] $BranchName,
 
         [Parameter(Mandatory = $false)]
-        [string] $Title = 'Pester validation summary'
+        [string] $Title = 'Pester validation summary',
+
+        [Parameter(Mandatory = $false)]
+        [string] $ModulesRootFolder = 'avm'
     )
 
     $passedTests = $PesterTestResults.Passed
@@ -100,7 +103,10 @@ function Set-PesterGitHubOutput {
     Write-Verbose ('Formatting [{0}] skipped tests' -f $skippedTests.Count)
     Write-Verbose ('Formatting [{0}] tests with explicit warnings' -f $warnings.Count)
 
-    $moduleSplitRegex = '[\/|\\]modules[\/|\\](res|ptn|utl)[\/|\\]'
+    # Root folder holding all modules that will be tested
+    $ModulesRootFolder
+
+    $moduleSplitRegex = '[\/|\\]{0}[\/|\\](res|ptn|utl)[\/|\\]' -f $ModulesRootFolder
 
     ######################
     # Set output content #
@@ -145,7 +151,7 @@ function Set-PesterGitHubOutput {
             if ($failedTest.ScriptBlock.File -match $moduleSplitRegex) {
                 # Module test
                 $testFileIdentifier = $failedTest.ErrorRecord.TargetObject.File -split $moduleSplitRegex
-                $testFile = ('modules/{0}/{1}' -f $testFileIdentifier[1], $testFileIdentifier[2]) -replace '\\', '/' # e.g., [modules\res\cognitive-services\account\tests\unit\custom.tests.ps1]
+                $testFile = ('{0}/{1}/{2}' -f $modulesRootFolder, $testFileIdentifier[1], $testFileIdentifier[2]) -replace '\\', '/' # e.g., [modules\res\cognitive-services\account\tests\unit\custom.tests.ps1]
             } else {
                 # None-module test
                 $testFile = $failedTest.ScriptBlock.File -replace ('{0}[\\|\/]*' -f [regex]::Escape($RepoRootPath))
@@ -199,7 +205,7 @@ function Set-PesterGitHubOutput {
             if ($passedTest.ScriptBlock.File -match $moduleSplitRegex) {
                 # Module test
                 $testFileIdentifier = $passedTest.ScriptBlock.File -split $moduleSplitRegex
-                $testFile = ('modules/{0}/{1}' -f $testFileIdentifier[1], $testFileIdentifier[2]) -replace '\\', '/' # e.g., [modules\res\cognitive-services\account\tests\unit\custom.tests.ps1]
+                $testFile = ('{0}/{1}/{2}' -f $modulesRootFolder, $testFileIdentifier[1], $testFileIdentifier[2]) -replace '\\', '/' # e.g., [modules\res\cognitive-services\account\tests\unit\custom.tests.ps1]
             } else {
                 # None-module test
                 $testFile = $passedTest.ScriptBlock.File -replace ('{0}[\\|\/]*' -f [regex]::Escape($RepoRootPath))
@@ -253,7 +259,7 @@ function Set-PesterGitHubOutput {
             if ($skippedTest.ScriptBlock.File -match $moduleSplitRegex) {
                 # Module test
                 $testFileIdentifier = $skippedTest.ScriptBlock.File -split $moduleSplitRegex
-                $testFile = ('modules/{0}/{1}' -f $testFileIdentifier[1], $testFileIdentifier[2]) -replace '\\', '/' # e.g., [modules\res\cognitive-services\account\tests\unit\custom.tests.ps1]
+                $testFile = ('{0}/{1}/{2}' -f $modulesRootFolder, $testFileIdentifier[1], $testFileIdentifier[2]) -replace '\\', '/' # e.g., [modules\res\cognitive-services\account\tests\unit\custom.tests.ps1]
             } else {
                 # None-module test
                 $testFile = $skippedTest.ScriptBlock.File -replace ('{0}[\\|\/]*' -f [regex]::Escape($RepoRootPath))
@@ -305,7 +311,7 @@ function Set-PesterGitHubOutput {
                 if ($test.ScriptBlock.File -match $moduleSplitRegex) {
                     # Module test
                     $testFileIdentifier = $test.ScriptBlock.File -split $moduleSplitRegex
-                    $testFile = ('modules/{0}/{1}' -f $testFileIdentifier[1], $testFileIdentifier[2]) -replace '\\', '/' # e.g., [modules\res\cognitive-services\account\tests\unit\custom.tests.ps1]
+                    $testFile = ('{0}/{1}/{2}' -f $modulesRootFolder, $testFileIdentifier[1], $testFileIdentifier[2]) -replace '\\', '/' # e.g., [modules\res\cognitive-services\account\tests\unit\custom.tests.ps1]
                 } else {
                     # None-module test
                     $testFile = $test.ScriptBlock.File -replace ('{0}[\\|\/]*' -f [regex]::Escape($RepoRootPath))
