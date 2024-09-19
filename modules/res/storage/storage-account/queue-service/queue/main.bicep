@@ -1,5 +1,5 @@
 metadata name = 'Storage Account Queues'
-metadata moduleName = 'aeavm/res/storage/storage-account/queue-service/queue'
+metadata moduleIdentifier = 'aeavm/res/storage/storage-account/queue-service/queue'
 metadata description = 'This module deploys a Storage Account Queue.'
 metadata owner = 'anderseide'
 metadata reviewer = 'anderseide'

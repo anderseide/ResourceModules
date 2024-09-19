@@ -6,10 +6,10 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "4761120853381381775"
+      "templateHash": "3858832308693953142"
     },
     "name": "Storage Account Table Services",
-    "moduleName": "aeavm/res/storage/storage-account/table-service",
+    "moduleIdentifier": "aeavm/res/storage/storage-account/table-service",
     "description": "This module deploys a Storage Account Table Service.",
     "owner": "anderseide",
     "reviewer": "anderseide"
@@ -250,10 +250,10 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "5200230868873990750"
+              "templateHash": "12279756925072988759"
             },
             "name": "Storage Account Table",
-            "moduleName": "aeavm/res/storage/storage-account/table-service/table",
+            "moduleIdentifier": "aeavm/res/storage/storage-account/table-service/table",
             "description": "This module deploys a Storage Account Table.",
             "owner": "anderseide",
             "reviewer": "anderseide"

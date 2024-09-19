@@ -6,10 +6,10 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "14973723551115368689"
+      "templateHash": "16416235155013172329"
     },
     "name": "Storage Account Queues",
-    "moduleName": "aeavm/res/storage/storage-account/queue-service/queue",
+    "moduleIdentifier": "aeavm/res/storage/storage-account/queue-service/queue",
     "description": "This module deploys a Storage Account Queue.",
     "owner": "anderseide",
     "reviewer": "anderseide"

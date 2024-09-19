@@ -5,10 +5,10 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "6617506495686589936"
+      "templateHash": "8059613061459926660"
     },
     "name": "Storage Account Management Policies",
-    "moduleName": "aeavm/res/storage/storage-account/management-policy",
+    "moduleIdentifier": "aeavm/res/storage/storage-account/management-policy",
     "description": "This module deploys a Storage Account Management Policy.",
     "owner": "anderseide",
     "reviewer": "anderseide"

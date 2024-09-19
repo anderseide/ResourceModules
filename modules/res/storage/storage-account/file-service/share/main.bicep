@@ -1,5 +1,5 @@
 metadata name = 'Storage Account File Shares'
-metadata moduleName = 'aeavm/res/storage/storage-account/file-service/share'
+metadata moduleIdentifier = 'aeavm/res/storage/storage-account/file-service/share'
 metadata description = 'This module deploys a Storage Account File Share.'
 metadata owner = 'anderseide'
 metadata reviewer = 'anderseide'

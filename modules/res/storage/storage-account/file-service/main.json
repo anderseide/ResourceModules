@@ -6,10 +6,10 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "3293939161037883316"
+      "templateHash": "5350383536206624922"
     },
     "name": "Storage Account File Share Services",
-    "moduleName": "aeavm/res/storage/storage-account/file-service",
+    "moduleIdentifier": "aeavm/res/storage/storage-account/file-service",
     "description": "This module deploys a Storage Account File Share Service.",
     "owner": "anderseide",
     "reviewer": "anderseide"
@@ -289,10 +289,10 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "14408833816154287519"
+              "templateHash": "12939225321475087550"
             },
             "name": "Storage Account File Shares",
-            "moduleName": "aeavm/res/storage/storage-account/file-service/share",
+            "moduleIdentifier": "aeavm/res/storage/storage-account/file-service/share",
             "description": "This module deploys a Storage Account File Share.",
             "owner": "anderseide",
             "reviewer": "anderseide"

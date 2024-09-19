@@ -1,5 +1,5 @@
 metadata name = 'Storage Account Table'
-metadata moduleName = 'aeavm/res/storage/storage-account/table-service/table'
+metadata moduleIdentifier = 'aeavm/res/storage/storage-account/table-service/table'
 metadata description = 'This module deploys a Storage Account Table.'
 metadata owner = 'anderseide'
 metadata reviewer = 'anderseide'

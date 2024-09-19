@@ -6,10 +6,10 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "8317092706958112838"
+      "templateHash": "4420353996871957256"
     },
     "name": "Storage Accounts",
-    "moduleName": "aeavm/res/storage/storage-account",
+    "moduleIdentifier": "aeavm/res/storage/storage-account",
     "description": "This module deploys a Storage Account.",
     "owner": "anderseide",
     "reviewer": "anderseide"
@@ -1940,10 +1940,10 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "6617506495686589936"
+              "templateHash": "8059613061459926660"
             },
             "name": "Storage Account Management Policies",
-            "moduleName": "aeavm/res/storage/storage-account/management-policy",
+            "moduleIdentifier": "aeavm/res/storage/storage-account/management-policy",
             "description": "This module deploys a Storage Account Management Policy.",
             "owner": "anderseide",
             "reviewer": "anderseide"
@@ -2052,10 +2052,10 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "12825887104098657867"
+              "templateHash": "17153232280140245707"
             },
             "name": "Storage Account Local Users",
-            "moduleName": "aeavm/res/storage/storage-account/local-user",
+            "moduleIdentifier": "aeavm/res/storage/storage-account/local-user",
             "description": "This module deploys a Storage Account Local User, which is used for SFTP authentication.",
             "owner": "anderseide",
             "reviewer": "anderseide"
@@ -2272,10 +2272,10 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "14889939746656256712"
+              "templateHash": "6528910635123315088"
             },
             "name": "Storage Account blob Services",
-            "moduleName": "aeavm/res/storage/storage-account/blob-service",
+            "moduleIdentifier": "aeavm/res/storage/storage-account/blob-service",
             "description": "This module deploys a Storage Account Blob Service.",
             "owner": "anderseide",
             "reviewer": "anderseide"
@@ -2672,10 +2672,10 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.29.47.4906",
-                      "templateHash": "7253264158827629529"
+                      "templateHash": "17086887710548579801"
                     },
                     "name": "Storage Account Blob Containers",
-                    "moduleName": "aeavm/res/storage/storage-account/blob-service/container",
+                    "moduleIdentifier": "aeavm/res/storage/storage-account/blob-service/container",
                     "description": "This module deploys a Storage Account Blob Container.",
                     "owner": "anderseide",
                     "reviewer": "anderseide"
@@ -2957,10 +2957,10 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.29.47.4906",
-                              "templateHash": "12160777765508066118"
+                              "templateHash": "3855892024696050088"
                             },
                             "name": "Storage Account Blob Container Immutability Policies",
-                            "moduleName": "aeavm/res/storage/storage-account/blob-service/container/immutability-policy",
+                            "moduleIdentifier": "aeavm/res/storage/storage-account/blob-service/container/immutability-policy",
                             "description": "This module deploys a Storage Account Blob Container Immutability Policy.",
                             "owner": "anderseide",
                             "reviewer": "anderseide"
@@ -3138,10 +3138,10 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "3293939161037883316"
+              "templateHash": "5350383536206624922"
             },
             "name": "Storage Account File Share Services",
-            "moduleName": "aeavm/res/storage/storage-account/file-service",
+            "moduleIdentifier": "aeavm/res/storage/storage-account/file-service",
             "description": "This module deploys a Storage Account File Share Service.",
             "owner": "anderseide",
             "reviewer": "anderseide"
@@ -3421,10 +3421,10 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.29.47.4906",
-                      "templateHash": "14408833816154287519"
+                      "templateHash": "12939225321475087550"
                     },
                     "name": "Storage Account File Shares",
-                    "moduleName": "aeavm/res/storage/storage-account/file-service/share",
+                    "moduleIdentifier": "aeavm/res/storage/storage-account/file-service/share",
                     "description": "This module deploys a Storage Account File Share.",
                     "owner": "anderseide",
                     "reviewer": "anderseide"
@@ -3906,10 +3906,10 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "1763724329901610218"
+              "templateHash": "15852924465701206312"
             },
             "name": "Storage Account Queue Services",
-            "moduleName": "aeavm/res/storage/storage-account/queue-service",
+            "moduleIdentifier": "aeavm/res/storage/storage-account/queue-service",
             "description": "This module deploys a Storage Account Queue Service.",
             "owner": "anderseide",
             "reviewer": "anderseide"
@@ -4153,10 +4153,10 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.29.47.4906",
-                      "templateHash": "14973723551115368689"
+                      "templateHash": "16416235155013172329"
                     },
                     "name": "Storage Account Queues",
-                    "moduleName": "aeavm/res/storage/storage-account/queue-service/queue",
+                    "moduleIdentifier": "aeavm/res/storage/storage-account/queue-service/queue",
                     "description": "This module deploys a Storage Account Queue.",
                     "owner": "anderseide",
                     "reviewer": "anderseide"
@@ -4426,10 +4426,10 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "4761120853381381775"
+              "templateHash": "3858832308693953142"
             },
             "name": "Storage Account Table Services",
-            "moduleName": "aeavm/res/storage/storage-account/table-service",
+            "moduleIdentifier": "aeavm/res/storage/storage-account/table-service",
             "description": "This module deploys a Storage Account Table Service.",
             "owner": "anderseide",
             "reviewer": "anderseide"
@@ -4670,10 +4670,10 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.29.47.4906",
-                      "templateHash": "5200230868873990750"
+                      "templateHash": "12279756925072988759"
                     },
                     "name": "Storage Account Table",
-                    "moduleName": "aeavm/res/storage/storage-account/table-service/table",
+                    "moduleIdentifier": "aeavm/res/storage/storage-account/table-service/table",
                     "description": "This module deploys a Storage Account Table.",
                     "owner": "anderseide",
                     "reviewer": "anderseide"

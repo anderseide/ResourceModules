@@ -6,10 +6,10 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "12825887104098657867"
+      "templateHash": "17153232280140245707"
     },
     "name": "Storage Account Local Users",
-    "moduleName": "aeavm/res/storage/storage-account/local-user",
+    "moduleIdentifier": "aeavm/res/storage/storage-account/local-user",
     "description": "This module deploys a Storage Account Local User, which is used for SFTP authentication.",
     "owner": "anderseide",
     "reviewer": "anderseide"

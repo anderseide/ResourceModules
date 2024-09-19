@@ -1,5 +1,5 @@
 metadata name = 'Storage Account Management Policies'
-metadata moduleName = 'aeavm/res/storage/storage-account/management-policy'
+metadata moduleIdentifier = 'aeavm/res/storage/storage-account/management-policy'
 metadata description = 'This module deploys a Storage Account Management Policy.'
 metadata owner = 'anderseide'
 metadata reviewer = 'anderseide'

@@ -1,5 +1,5 @@
 metadata name = 'Storage Account blob Services'
-metadata moduleName = 'aeavm/res/storage/storage-account/blob-service'
+metadata moduleIdentifier = 'aeavm/res/storage/storage-account/blob-service'
 metadata description = 'This module deploys a Storage Account Blob Service.'
 metadata owner = 'anderseide'
 metadata reviewer = 'anderseide'

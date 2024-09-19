@@ -1,5 +1,5 @@
 metadata name = 'Storage Accounts'
-metadata moduleName = 'aeavm/res/storage/storage-account'
+metadata moduleIdentifier = 'aeavm/res/storage/storage-account'
 metadata description = 'This module deploys a Storage Account.'
 metadata owner = 'anderseide'
 metadata reviewer = 'anderseide'
