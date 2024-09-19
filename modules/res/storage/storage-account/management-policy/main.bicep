@@ -1,6 +1,8 @@
 metadata name = 'Storage Account Management Policies'
+metadata moduleName = 'aeavm/res/storage/storage-account/management-policy'
 metadata description = 'This module deploys a Storage Account Management Policy.'
-metadata owner = 'Azure/module-maintainers'
+metadata owner = 'anderseide'
+metadata reviewer = 'anderseide'
 
 @maxLength(24)
 @description('Conditional. The name of the parent Storage Account. Required if the template is used in a standalone deployment.')

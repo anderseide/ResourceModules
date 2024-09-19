@@ -6,11 +6,13 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "1933197013743223154"
+      "templateHash": "3293939161037883316"
     },
     "name": "Storage Account File Share Services",
+    "moduleName": "aeavm/res/storage/storage-account/file-service",
     "description": "This module deploys a Storage Account File Share Service.",
-    "owner": "Azure/module-maintainers"
+    "owner": "anderseide",
+    "reviewer": "anderseide"
   },
   "definitions": {
     "diagnosticSettingType": {
@@ -287,11 +289,13 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "13477688809575027800"
+              "templateHash": "14408833816154287519"
             },
             "name": "Storage Account File Shares",
+            "moduleName": "aeavm/res/storage/storage-account/file-service/share",
             "description": "This module deploys a Storage Account File Share.",
-            "owner": "Azure/module-maintainers"
+            "owner": "anderseide",
+            "reviewer": "anderseide"
           },
           "definitions": {
             "roleAssignmentType": {

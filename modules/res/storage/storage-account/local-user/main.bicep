@@ -1,6 +1,8 @@
 metadata name = 'Storage Account Local Users'
+metadata moduleName = 'aeavm/res/storage/storage-account/local-user'
 metadata description = 'This module deploys a Storage Account Local User, which is used for SFTP authentication.'
-metadata owner = 'Azure/module-maintainers'
+metadata owner = 'anderseide'
+metadata reviewer = 'anderseide'
 
 @maxLength(24)
 @description('Conditional. The name of the parent Storage Account. Required if the template is used in a standalone deployment.')

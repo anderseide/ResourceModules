@@ -6,11 +6,13 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "16017327978473583176"
+      "templateHash": "5200230868873990750"
     },
     "name": "Storage Account Table",
+    "moduleName": "aeavm/res/storage/storage-account/table-service/table",
     "description": "This module deploys a Storage Account Table.",
-    "owner": "Azure/module-maintainers"
+    "owner": "anderseide",
+    "reviewer": "anderseide"
   },
   "definitions": {
     "roleAssignmentType": {

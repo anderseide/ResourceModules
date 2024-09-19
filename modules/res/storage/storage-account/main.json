@@ -6,11 +6,13 @@
     "_generator": {
       "name": "bicep",
       "version": "0.29.47.4906",
-      "templateHash": "6735651687082765200"
+      "templateHash": "8317092706958112838"
     },
     "name": "Storage Accounts",
+    "moduleName": "aeavm/res/storage/storage-account",
     "description": "This module deploys a Storage Account.",
-    "owner": "Azure/module-maintainers"
+    "owner": "anderseide",
+    "reviewer": "anderseide"
   },
   "definitions": {
     "managedIdentitiesType": {
@@ -1938,11 +1940,13 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "11289787713365096902"
+              "templateHash": "6617506495686589936"
             },
             "name": "Storage Account Management Policies",
+            "moduleName": "aeavm/res/storage/storage-account/management-policy",
             "description": "This module deploys a Storage Account Management Policy.",
-            "owner": "Azure/module-maintainers"
+            "owner": "anderseide",
+            "reviewer": "anderseide"
           },
           "parameters": {
             "storageAccountName": {
@@ -2048,11 +2052,13 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "18130658711251621530"
+              "templateHash": "12825887104098657867"
             },
             "name": "Storage Account Local Users",
+            "moduleName": "aeavm/res/storage/storage-account/local-user",
             "description": "This module deploys a Storage Account Local User, which is used for SFTP authentication.",
-            "owner": "Azure/module-maintainers"
+            "owner": "anderseide",
+            "reviewer": "anderseide"
           },
           "definitions": {
             "sshAuthorizedKeysType": {
@@ -2266,11 +2272,13 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "17077763197163073998"
+              "templateHash": "14889939746656256712"
             },
             "name": "Storage Account blob Services",
+            "moduleName": "aeavm/res/storage/storage-account/blob-service",
             "description": "This module deploys a Storage Account Blob Service.",
-            "owner": "Azure/module-maintainers"
+            "owner": "anderseide",
+            "reviewer": "anderseide"
           },
           "definitions": {
             "diagnosticSettingType": {
@@ -2664,11 +2672,13 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.29.47.4906",
-                      "templateHash": "1020003258393866601"
+                      "templateHash": "7253264158827629529"
                     },
                     "name": "Storage Account Blob Containers",
+                    "moduleName": "aeavm/res/storage/storage-account/blob-service/container",
                     "description": "This module deploys a Storage Account Blob Container.",
-                    "owner": "Azure/module-maintainers"
+                    "owner": "anderseide",
+                    "reviewer": "anderseide"
                   },
                   "definitions": {
                     "roleAssignmentType": {
@@ -2947,11 +2957,13 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.29.47.4906",
-                              "templateHash": "7245741358008626948"
+                              "templateHash": "12160777765508066118"
                             },
                             "name": "Storage Account Blob Container Immutability Policies",
+                            "moduleName": "aeavm/res/storage/storage-account/blob-service/container/immutability-policy",
                             "description": "This module deploys a Storage Account Blob Container Immutability Policy.",
-                            "owner": "Azure/module-maintainers"
+                            "owner": "anderseide",
+                            "reviewer": "anderseide"
                           },
                           "parameters": {
                             "storageAccountName": {
@@ -3126,11 +3138,13 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "1933197013743223154"
+              "templateHash": "3293939161037883316"
             },
             "name": "Storage Account File Share Services",
+            "moduleName": "aeavm/res/storage/storage-account/file-service",
             "description": "This module deploys a Storage Account File Share Service.",
-            "owner": "Azure/module-maintainers"
+            "owner": "anderseide",
+            "reviewer": "anderseide"
           },
           "definitions": {
             "diagnosticSettingType": {
@@ -3407,11 +3421,13 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.29.47.4906",
-                      "templateHash": "13477688809575027800"
+                      "templateHash": "14408833816154287519"
                     },
                     "name": "Storage Account File Shares",
+                    "moduleName": "aeavm/res/storage/storage-account/file-service/share",
                     "description": "This module deploys a Storage Account File Share.",
-                    "owner": "Azure/module-maintainers"
+                    "owner": "anderseide",
+                    "reviewer": "anderseide"
                   },
                   "definitions": {
                     "roleAssignmentType": {
@@ -3890,11 +3906,13 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "9552908737955027812"
+              "templateHash": "1763724329901610218"
             },
             "name": "Storage Account Queue Services",
+            "moduleName": "aeavm/res/storage/storage-account/queue-service",
             "description": "This module deploys a Storage Account Queue Service.",
-            "owner": "Azure/module-maintainers"
+            "owner": "anderseide",
+            "reviewer": "anderseide"
           },
           "definitions": {
             "diagnosticSettingType": {
@@ -4135,11 +4153,13 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.29.47.4906",
-                      "templateHash": "1992900679572007532"
+                      "templateHash": "14973723551115368689"
                     },
                     "name": "Storage Account Queues",
+                    "moduleName": "aeavm/res/storage/storage-account/queue-service/queue",
                     "description": "This module deploys a Storage Account Queue.",
-                    "owner": "Azure/module-maintainers"
+                    "owner": "anderseide",
+                    "reviewer": "anderseide"
                   },
                   "definitions": {
                     "roleAssignmentType": {
@@ -4406,11 +4426,13 @@
             "_generator": {
               "name": "bicep",
               "version": "0.29.47.4906",
-              "templateHash": "15143318143658591417"
+              "templateHash": "4761120853381381775"
             },
             "name": "Storage Account Table Services",
+            "moduleName": "aeavm/res/storage/storage-account/table-service",
             "description": "This module deploys a Storage Account Table Service.",
-            "owner": "Azure/module-maintainers"
+            "owner": "anderseide",
+            "reviewer": "anderseide"
           },
           "definitions": {
             "diagnosticSettingType": {
@@ -4648,11 +4670,13 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.29.47.4906",
-                      "templateHash": "16017327978473583176"
+                      "templateHash": "5200230868873990750"
                     },
                     "name": "Storage Account Table",
+                    "moduleName": "aeavm/res/storage/storage-account/table-service/table",
                     "description": "This module deploys a Storage Account Table.",
-                    "owner": "Azure/module-maintainers"
+                    "owner": "anderseide",
+                    "reviewer": "anderseide"
                   },
                   "definitions": {
                     "roleAssignmentType": {
