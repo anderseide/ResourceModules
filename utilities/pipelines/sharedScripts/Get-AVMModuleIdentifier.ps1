@@ -2,7 +2,7 @@
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({ Test-Path $_ })]
+        [ValidateScript({ Test-Path $_ -PathType Container })]
         [string] $ModuleFolderPath
     )
 
@@ -11,6 +11,7 @@
     }
 
     process {
+
         $moduleArmTemplateFilePath = Join-Path $ModuleFolderPath 'main.json'
         $moduleArmTemplateContent = Get-Content -Path $moduleArmTemplateFilePath -Raw
 
@@ -21,13 +22,26 @@
             return $moduleIdentifier
         } else {
             # Return Module Identified based in path
-            $moduleIdentifier = (Split-Path $moduleArmTemplateFilePath -Parent) -split '[\/|\\]modules[\/|\\](res|ptn|utl)[\/|\\]'
-            return ('modules/{0}/{1}' -f $moduleIdentifier[1], $moduleIdentifier[2]) -replace '\\', '/'
-        }
 
+            # some/path/modules/res/storage/storage-account -> modules/res/storage/storage-account
+            # some/path/avm/res/storage/storage-account -> avm/res/storage/storage-account
+            # some/path/avm/res/storage/storage-account/blob-service/container -> avm/res/storage/storage-account/blob-service/container
+            # some/path/whatever/ptn/some/thing -> whatever/ptn/some/thing
+
+            $folderPathNormalized = $ModuleFolderPath.Replace('\', '/')
+            $extractPattern = '\b(\w+/(res|ptn|utl).*)'
+
+            if ($folderPathNormalized -match $extractPattern) {
+                $moduleIdentifier = $matches[1]
+                return $moduleIdentifier
+            } else {
+                Write-Error 'Not able to extract name from given path'
+            }
+        }
     }
 
     end {
 
     }
 }
+
