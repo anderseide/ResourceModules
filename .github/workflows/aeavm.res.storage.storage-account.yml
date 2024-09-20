@@ -1,4 +1,4 @@
-name: "modules.res.storage.storage-account"
+name: "aeavm.res.storage.storage-account"
 
 on:
   workflow_dispatch:
@@ -28,7 +28,7 @@ on:
     paths:
       - ".github/actions/templates/**"
       - ".github/workflows/module.template.module.yml"
-      - ".github/workflows/modules.res.storage.storage-account.yml"
+      - ".github/workflows/aeavm.res.storage.storage-account.yml"
       - "modules/res/storage/storage-account/**"
       - "utilities/pipelines/**"
       - "!utilities/pipelines/platform/**"
@@ -36,7 +36,7 @@ on:
 
 env:
   modulePath: "modules/res/storage/storage-account"
-  workflowPath: ".github/workflows/modules.res.storage.storage-account.yml"
+  workflowPath: ".github/workflows/aeavm.res.storage.storage-account.yml"
 
 concurrency:
   group: ${{ github.workflow }}

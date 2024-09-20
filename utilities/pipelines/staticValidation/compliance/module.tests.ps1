@@ -32,11 +32,12 @@ $script:moduleFolderPaths = $moduleFolderPaths
 $script:bicepTemplateCompilationFailedException = "Unable to compile the main.bicep template's content. This can happen if there is an error in the template. Please check if you can run the command ``bicep build {0} --stdout | ConvertFrom-Json -AsHashtable``." # -f $templateFilePath
 $script:templateNotFoundException = 'No template file found in folder [{0}]' # -f $moduleFolderPath
 
-
-$moduleSplitRegex = '[\/|\\]{0}[\/|\\](res|ptn|utl)[\/|\\]' -f $modulesRootFolder
-
 # Import any helper function used in this test script
 Import-Module (Join-Path $PSScriptRoot 'helper' 'helper.psm1') -Force
+
+$utilitiesFolderPath = (Get-Item $PSScriptRoot).Parent.Parent.Parent
+
+. (Join-Path $utilitiesFolderPath 'pipelines' 'sharedScripts' 'Get-AVMModuleIdentifier.ps1')
 
 # Building all required files for tests to optimize performance (using thread-safe multithreading) to consume later
 # Collecting paths
@@ -66,7 +67,7 @@ Describe 'File/folder tests' -Tag 'Modules' {
 
         $moduleFolderTestCases = [System.Collections.ArrayList] @()
         foreach ($moduleFolderPath in $moduleFolderPaths) {
-            $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex) # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
+            $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\]\w+[\/|\\](res|ptn|utl)[\/|\\]') # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
             $resourceTypeIdentifier = $resourceTypeIdentifier -replace '\\', '/'
             $moduleFolderTestCases += @{
                 moduleFolderName = $resourceTypeIdentifier
@@ -162,14 +163,16 @@ Describe 'File/folder tests' -Tag 'Modules' {
 
         $topLevelModuleTestCases = [System.Collections.ArrayList]@()
         foreach ($moduleFolderPath in $moduleFolderPaths) {
-            $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex) # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
+            $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\](\w+)[\/|\\](res|ptn|utl)[\/|\\]') # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
             $resourceTypeIdentifier = $resourceTypeIdentifier -replace '\\', '/'
             if (($resourceTypeIdentifier -split '[\/|\\]').Count -eq 2) {
                 $topLevelModuleTestCases += @{
-                    moduleFolderName = $moduleFolderPath.Replace('\', '/').Split($modulesRootFolder)[1]
+                    moduleFolderName = '{0}/{1}' -f $moduleType, $resourceTypeIdentifier
                     moduleFolderPath = $moduleFolderPath
                     moduleType       = $moduleType
                 }
+
+                Write-Host $topLevelModuleTestCases
             }
         }
 
@@ -251,14 +254,15 @@ Describe 'Pipeline tests' -Tag 'Pipeline' {
     $pipelineTestCases = [System.Collections.ArrayList] @()
     foreach ($moduleFolderPath in $moduleFolderPaths) {
 
-        $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex)[2] -replace '\\', '/' # 'modules/res|ptn|utl/<provider>/<resourceType>' would return '<provider>/<resourceType>'
+        $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\]\w+[\/|\\](res|ptn|utl)[\/|\\]')[2] -replace '\\', '/' # 'modules/res|ptn|utl/<provider>/<resourceType>' would return '<provider>/<resourceType>'
         $relativeModulePath = Join-Path $modulesRootFolder ($moduleFolderPath -split ('[\/|\\]{0}[\/|\\]' -f $modulesRootFolder) )[1]
+        $moduleIdentifier = Get-AVMModuleIdentifier -ModuleFolderPath $moduleFolderPath
 
         $isTopLevelModule = ($resourceTypeIdentifier -split '[\/|\\]').Count -eq 2
         if ($isTopLevelModule) {
 
             $workflowsFolderName = Join-Path $repoRootPath '.github' 'workflows'
-            $workflowFileName = Get-PipelineFileName -ResourceIdentifier $relativeModulePath
+            $workflowFileName = Get-PipelineFileName -ResourceIdentifier $moduleIdentifier
             $workflowPath = Join-Path $workflowsFolderName $workflowFileName
 
             $pipelineTestCases += @{
@@ -305,8 +309,7 @@ Describe 'Module tests' -Tag 'Module' {
         $readmeFileTestCases = [System.Collections.ArrayList] @()
 
         foreach ($moduleFolderPath in $moduleFolderPaths) {
-
-            $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex)[2] -replace '\\', '/' # 'modules/res|ptn|utl/<provider>/<resourceType>' would return '<provider>/<resourceType>'
+            $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\]\w+[\/|\\](res|ptn|utl)[\/|\\]')[2] -replace '\\', '/' # 'modules/res|ptn|utl/<provider>/<resourceType>' would return '<provider>/<resourceType>'
             $templateFilePath = Join-Path $moduleFolderPath 'main.bicep'
 
             $readmeFileTestCases += @{
@@ -364,7 +367,7 @@ Describe 'Module tests' -Tag 'Module' {
                 continue
             }
 
-            $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex)[2] -replace '\\', '/' # 'modules/res|ptn|utl/<provider>/<resourceType>' would return '<provider>/<resourceType>'
+            $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\]\w+[\/|\\](res|ptn|utl)[\/|\\]')[2] -replace '\\', '/' # 'modules/res|ptn|utl/<provider>/<resourceType>' would return '<provider>/<resourceType>'
 
             $armTemplateTestCases += @{
                 moduleFolderName = $resourceTypeIdentifier
@@ -416,7 +419,7 @@ Describe 'Module tests' -Tag 'Module' {
             $templateFilePath = Join-Path $moduleFolderPath 'main.bicep'
             $templateFileContent = $builtTestFileMap[$templateFilePath]
 
-            $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex) # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
+            $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\](\w+)[\/|\\](res|ptn|utl)[\/|\\]') # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
             $resourceTypeIdentifier = $resourceTypeIdentifier -replace '\\', '/'
 
             # Test file setup
@@ -652,12 +655,12 @@ Describe 'Module tests' -Tag 'Module' {
                 $udtSpecificTestCases = [System.Collections.ArrayList] @() # Specific UDT test cases for singular UDTs (e.g. tags)
                 foreach ($moduleFolderPath in $moduleFolderPaths) {
 
-                    if ($moduleFolderPath -match $moduleSplitRegex) {
+                    if ($moduleFolderPath -match '(.)[\/|\\](ptn|utl)[\/|\\](\w+)[\/|\\](.)') {
                         # Skip UDT interface tests for ptn & utl modules
                         continue
                     }
 
-                    $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex) # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
+                    $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\](\w+)[\/|\\](res|ptn|utl)[\/|\\]') # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
                     $resourceTypeIdentifier = $resourceTypeIdentifier -replace '\\', '/'
                     $templateFilePath = Join-Path $moduleFolderPath 'main.bicep'
                     $templateFileContent = $builtTestFileMap[$templateFilePath]
@@ -1165,7 +1168,7 @@ Describe 'Governance tests' {
     $governanceTestCases = [System.Collections.ArrayList] @()
     foreach ($moduleFolderPath in $moduleFolderPaths) {
 
-        $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex) # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
+        $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\](\w+)[\/|\\](res|ptn|utl)[\/|\\]') # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
         $resourceTypeIdentifier = $resourceTypeIdentifier -replace '\\', '/'
         $relativeModulePath = Join-Path $modulesRootFolder ($moduleFolderPath -split ('[\/|\\]{0}[\/|\\]' -f $modulesRootFolder))[1]
 
@@ -1267,7 +1270,7 @@ Describe 'Test file tests' -Tag 'TestTemplate' {
                 $testFilePaths = (Get-ChildItem -Path $moduleFolderPath -Recurse -Filter 'main.test.bicep').FullName | Sort-Object -Culture 'en-US'
                 foreach ($testFilePath in $testFilePaths) {
                     $testFileContent = Get-Content $testFilePath
-                    $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split $moduleSplitRegex) # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
+                    $null, $moduleType, $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\](\w+)[\/|\\](res|ptn|utl)[\/|\\]') # 'modules/res|ptn|utl/<provider>/<resourceType>' would return 'modules', 'res|ptn|utl', '<provider>/<resourceType>'
                     $resourceTypeIdentifier = $resourceTypeIdentifier -replace '\\', '/'
 
                     $deploymentTestFileTestCases += @{

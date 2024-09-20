@@ -46,11 +46,12 @@ function Get-AVMModuleIdentifier {
                 # some/path/avm/res/storage/storage-account/blob-service/container -> avm/res/storage/storage-account/blob-service/container
                 # some/path/whatever/ptn/some/thing -> whatever/ptn/some/thing
 
-                $folderPathNormalized = $ModuleFolderPath.Replace('\', '/')
-                $extractPattern = '\b(\w+\/(res|ptn|utl).*)(?=\/)'
+                Write-Verbose -Message "Module Folder Path: $moduleFolderPath"
+                # $folderPathNormalized = $ModuleFolderPath.Replace('\', '/')
+                $extractPattern = '([a-zA-Z-_0-9]+)[\/|\\](res|ptn|utl)[\/|\\](\w+)[\/|\\]([a-zA-Z-_0-9]+)'
 
-                if ($folderPathNormalized -match $extractPattern) {
-                    $moduleIdentifier = $matches[1]
+                if ($moduleFolderPath -match $extractPattern) {
+                    $moduleIdentifier = $matches[0]
                     return $moduleIdentifier
                 } else {
                     Write-Error 'Not able to extract name from path. Verify that point to a valid resource, pattern or utility module'
