@@ -1410,15 +1410,28 @@ Describe 'API version tests' -Tag 'ApiCheck' {
 
     $testCases = @()
     $apiSpecsFileUri = 'https://azure.github.io/Azure-Verified-Modules/governance/apiSpecsList.json'
+    $apiSpecsFilePath = (Join-Path $utilitiesFolderPath 'src' 'apiSpecsListd.json')
+    $apiSpecs = $null
+    $ApiVersions = $null
 
-    try {
-        $apiSpecs = Invoke-WebRequest -Uri $ApiSpecsFileUri
+    if (($apiSpecs = Invoke-WebRequest -Uri $apiSpecsFileUri -SkipHttpErrorCheck) -and ($apiSpecs.StatusCode -eq 200)) {
+        # Setting ApiVersion from AVM public governance apiSpecsList
+        Write-Verbose -Message "Using downloaded ApiSpecs file from [ $apiSpecsFileUri ]"
         $ApiVersions = ConvertFrom-Json $apiSpecs.Content -AsHashtable
-    } catch {
-        Write-Warning "Failed to download API specs file from [$ApiSpecsFileUri]. Skipping API tests"
-        Set-ItResult -Skipped -Because "Failed to download API specs file from [$ApiSpecsFileUri]. Skipping API tests."
+    } elseif ($apiSpecs = Get-Content $apiSpecsFilePath -Raw) {
+        # Setting ApiVersion from local repo file
+        Write-Verbose -Message "Using local ApiSpecs file from [ $apiSpecsFilePath ]"
+        $ApiVersions = ConvertFrom-Json $apiSpecs -AsHashtable
+        Write-Warning "API Versions loaded from local file [$apiSpecsFilePath]. Ensure that file is updated"
+    } else {
+        Write-Warning 'Failed to download or load API specs file. Skipping API tests'
+        Write-Warning "Download url: [$apiSpecsFileUri]"
+        Write-Warning "Local path: [$apiSpecsFilePath]"
+        Set-ItResult -Skipped -Because 'Failed to download or load API specs file. Skipping API tests.'
         return
     }
+
+
 
     foreach ($moduleFolderPath in $moduleFolderPaths) {
 
