@@ -31,7 +31,7 @@ jobs:
             Write-Output '::group::Replace tokens in template file'
 
             # Load used functions
-            . (Join-Path $env:GITHUB_WORKSPACE 'utilities' 'pipelines' 'tokensReplacement' 'Convert-TokensInFileList.ps1')
+            . (Join-Path $env:GITHUB_WORKSPACE 'utilities' 'pipelines' 'sharedScripts' 'tokensReplacement' 'Convert-TokensInFileList.ps1')
 
             # Populate tokens
             $Tokens = @{
