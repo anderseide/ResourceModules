@@ -145,10 +145,7 @@ function Test-ModuleLocally {
         [switch] $ValidationTest,
 
         [Parameter(Mandatory = $false)]
-        [switch] $WhatIfTest,
-
-        [Parameter(Mandatory = $false)]
-        [string] $ModulesRootFolder = 'avm'
+        [switch] $WhatIfTest
     )
 
     begin {
@@ -184,7 +181,6 @@ function Test-ModuleLocally {
                         Container = New-PesterContainer -Path $testFiles -Data @{
                             repoRootPath      = $repoRootPath
                             moduleFolderPaths = Split-Path $TemplateFilePath -Parent
-                            modulesRootFolder = $ModulesRootFolder
                         }
                     }
                     Output = @{
