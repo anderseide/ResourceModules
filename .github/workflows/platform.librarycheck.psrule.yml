@@ -37,7 +37,7 @@ jobs:
             $Tokens = @{
               subscriptionId    = '${{ secrets.ARM_SUBSCRIPTION_ID }}'
               managementGroupId = '${{ secrets.ARM_MGMTGROUP_ID }}'
-              tenantId          = '${{ env.ARM_TENANT_ID }}'
+              tenantId          = '${{ secrets.ARM_TENANT_ID }}'
             }
 
             ## Add local (source control) tokens
@@ -63,7 +63,7 @@ jobs:
             $ConvertTokensInputs = @{
               FilePathList = $moduleTestFiles
               Tokens       = $Tokens
-              TokenPrefix  = '${{ env.tokenPrefix }}'
+              TokenPrefix  = '${{ env.tokenprefix }}'
               TokenSuffix  = '${{ env.tokenSuffix }}'
             }
 
