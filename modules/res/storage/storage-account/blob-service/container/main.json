@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.29.47.4906",
-      "templateHash": "17086887710548579801"
+      "version": "0.30.3.12046",
+      "templateHash": "6245480331389234463"
     },
     "name": "Storage Account Blob Containers",
     "moduleIdentifier": "aeavm/res/storage/storage-account/blob-service/container",
@@ -290,8 +290,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "3855892024696050088"
+              "version": "0.30.3.12046",
+              "templateHash": "17882518454023100344"
             },
             "name": "Storage Account Blob Container Immutability Policies",
             "moduleIdentifier": "aeavm/res/storage/storage-account/blob-service/container/immutability-policy",

@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.29.47.4906",
-      "templateHash": "5350383536206624922"
+      "version": "0.30.3.12046",
+      "templateHash": "707623729820722808"
     },
     "name": "Storage Account File Share Services",
     "moduleIdentifier": "aeavm/res/storage/storage-account/file-service",
@@ -288,8 +288,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "12939225321475087550"
+              "version": "0.30.3.12046",
+              "templateHash": "9498701800940917453"
             },
             "name": "Storage Account File Shares",
             "moduleIdentifier": "aeavm/res/storage/storage-account/file-service/share",
@@ -497,8 +497,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.29.47.4906",
-                      "templateHash": "10820882302387746924"
+                      "version": "0.30.3.12046",
+                      "templateHash": "18382573518279343036"
                     }
                   },
                   "parameters": {

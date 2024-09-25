@@ -2,7 +2,6 @@
 
 This module deploys a Storage Account File Share.
 
-
 ## Navigation
 
 - [Resource Types](#Resource-Types)

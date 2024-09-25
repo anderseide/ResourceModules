@@ -2,7 +2,6 @@
 
 This module deploys a Storage Account Blob Container.
 
-
 ## Navigation
 
 - [Resource Types](#Resource-Types)

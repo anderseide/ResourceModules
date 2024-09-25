@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.29.47.4906",
-      "templateHash": "15852924465701206312"
+      "version": "0.30.3.12046",
+      "templateHash": "8874654115531198207"
     },
     "name": "Storage Account Queue Services",
     "moduleIdentifier": "aeavm/res/storage/storage-account/queue-service",
@@ -252,8 +252,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.29.47.4906",
-              "templateHash": "16416235155013172329"
+              "version": "0.30.3.12046",
+              "templateHash": "17716622372940788014"
             },
             "name": "Storage Account Queues",
             "moduleIdentifier": "aeavm/res/storage/storage-account/queue-service/queue",
