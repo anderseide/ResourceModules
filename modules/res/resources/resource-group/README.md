@@ -2,7 +2,6 @@
 
 This module deploys a Resource Group.
 
-
 ## Navigation
 
 - [Resource Types](#Resource-Types)
