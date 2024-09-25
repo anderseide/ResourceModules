@@ -144,8 +144,12 @@ function Merge-FileWithNewContent {
         # Section is not existing (end of file)
         $startContent = $OldContent
         if ($OldContent[$startIndex] -ne $SectionStartIdentifier ) {
+            # Add newline if necessary
+            if (-not [String]::IsNullOrEmpty($OldContent[$startIndex])) {
+                $startContent += @('')
+            }
             # Add section header
-            $startContent = $startContent + @('', $SectionStartIdentifier)
+            $startContent = $startContent + @($SectionStartIdentifier)
         }
         $endContent = @()
     } else {

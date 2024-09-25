@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
 Based on the provided parameter metadata, determine whether the parameter is required or not
 
@@ -6,7 +6,7 @@ Based on the provided parameter metadata, determine whether the parameter is req
 Based on the provided parameter metadata, determine whether the parameter is required or not
 
 .PARAMETER Parameter
-The parameter metadata to analyze.
+Mandatory. The parameter metadata to analyze.
 
 For example: @{
     type     = 'string'

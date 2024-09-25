@@ -1806,7 +1806,8 @@ function Initialize-ReadMe {
     $moduleName = $TemplateFileContent.metadata.name
     $moduleDescription = $TemplateFileContent.metadata.description
 
-    if ($ReadMeFilePath -match 'modules.(?:res)') {
+    Write-Host "Readme file path: $ReadMeFilePath"
+    if ($ReadMeFilePath -match '[\/|\\]res[\/|\\]') {
         # Resource module
         $formattedResourceType = Get-SpecsAlignedResourceName -ResourceIdentifier $FullModuleIdentifier
 
@@ -1977,7 +1978,7 @@ function Set-ModuleReadMe {
     }
 
     $moduleRoot = Split-Path $TemplateFilePath -Parent
-    $fullModuleIdentifier = ($moduleRoot -split '[\/|\\]modules[\/|\\](res|ptn|utl)[\/|\\]')[2] -replace '\\', '/'
+    $fullModuleIdentifier = ($moduleRoot -split '[\/|\\]\w+[\/|\\](res|ptn|utl)[\/|\\]')[2] -replace '\\', '/'
     # Custom modules are modules having the same resource type but different properties based on the name
     # E.g., web/site/config--appsetting vs web/site/config--authsettingv2
     $customModuleSeparator = '--'

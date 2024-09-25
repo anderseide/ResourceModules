@@ -122,7 +122,7 @@ Invoke the function with the default path. Returns an object such as:
 {
     "Compute/availabilitySets": {
         "remoteReferences": [
-            "modules-res-network-networkinterface"
+            "avm-res-network-networkinterface"
         ],
         "resourceReferences": [
             "Microsoft.Resources/deployments@2021-04-01",
@@ -148,7 +148,7 @@ function Get-CrossReferencedModuleList {
         [string] $Path = (Get-Item $PSScriptRoot).Parent.Parent.Parent.Parent
     )
 
-    $repoRoot = ($Path -split '[\/|\\]modules[\/|\\](res|ptn|utl)[\/|\\]')[0]
+    $repoRoot = ($Path -split '[\/|\\]\w+[\/|\\](res|ptn|utl)[\/|\\]')[0]
     $resultSet = [ordered]@{}
 
     # Collect data
@@ -175,8 +175,8 @@ function Get-CrossReferencedModuleList {
         }
 
         $moduleFolderPath = Split-Path $moduleTemplatePath -Parent
-        ## modules/res/<provider>/<resourceType>
-        $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\]modules[\/|\\](res|ptn|utl)[\/|\\]')[2] -replace '\\', '/'
+        ## avm/res/<provider>/<resourceType>
+        $resourceTypeIdentifier = ($moduleFolderPath -split '[\/|\\]\w+[\/|\\](res|ptn|utl)[\/|\\]')[2] -replace '\\', '/'
 
         $providerNamespace = ($resourceTypeIdentifier -split '[\/|\\]')[0]
         $resourceType = $resourceTypeIdentifier -replace "$providerNamespace[\/|\\]", ''

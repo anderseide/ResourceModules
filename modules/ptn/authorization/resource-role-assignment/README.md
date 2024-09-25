@@ -2,7 +2,6 @@
 
 This module deploys a Role Assignment for a specific resource.
 
-
 ## Navigation
 
 - [Resource Types](#Resource-Types)
