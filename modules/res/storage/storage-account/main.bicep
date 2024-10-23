@@ -38,7 +38,7 @@ param kind string = 'StorageV2'
   'Standard_RAGZRS'
 ])
 @description('Optional. Storage Account Sku Name.')
-param skuName string = 'Standard_GRS'
+param skuName string = 'Standard_LRS'
 
 @allowed([
   'Premium'
