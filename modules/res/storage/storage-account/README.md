@@ -3467,7 +3467,7 @@ Storage Account Sku Name.
 
 - Required: No
 - Type: string
-- Default: `'Standard_GRS'`
+- Default: `'Standard_LRS'`
 - Allowed:
   ```Bicep
   [

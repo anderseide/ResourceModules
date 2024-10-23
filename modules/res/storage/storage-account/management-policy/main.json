@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.30.3.12046",
-      "templateHash": "11267423965296453501"
+      "version": "0.30.23.60470",
+      "templateHash": "247690159196379693"
     },
     "name": "Storage Account Management Policies",
     "moduleIdentifier": "aeavm/res/storage/storage-account/management-policy",

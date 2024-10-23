@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.30.3.12046",
-      "templateHash": "3178219502377504696"
+      "version": "0.30.23.60470",
+      "templateHash": "13615473367277668542"
     },
     "name": "Storage Account Local Users",
     "moduleIdentifier": "aeavm/res/storage/storage-account/local-user",

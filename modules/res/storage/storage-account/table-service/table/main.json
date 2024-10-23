@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.30.3.12046",
-      "templateHash": "11025228951612984353"
+      "version": "0.30.23.60470",
+      "templateHash": "4543352417932661232"
     },
     "name": "Storage Account Table",
     "moduleIdentifier": "aeavm/res/storage/storage-account/table-service/table",

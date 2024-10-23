@@ -5,8 +5,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.30.3.12046",
-      "templateHash": "95214242496542295"
+      "version": "0.30.23.60470",
+      "templateHash": "10121721533136313705"
     },
     "name": "Storage Account Table Services",
     "moduleIdentifier": "aeavm/res/storage/storage-account/table-service",
@@ -249,8 +249,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.30.3.12046",
-              "templateHash": "11025228951612984353"
+              "version": "0.30.23.60470",
+              "templateHash": "4543352417932661232"
             },
             "name": "Storage Account Table",
             "moduleIdentifier": "aeavm/res/storage/storage-account/table-service/table",
