@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.30.23.60470",
-      "templateHash": "13977872499852205558"
+      "templateHash": "4720596043380550497"
     },
     "name": "Storage Accounts",
     "moduleIdentifier": "aeavm/res/storage/storage-account",
@@ -660,7 +660,7 @@
     },
     "skuName": {
       "type": "string",
-      "defaultValue": "Standard_LRS",
+      "defaultValue": "Standard_GRS",
       "allowedValues": [
         "Standard_LRS",
         "Standard_GRS",
