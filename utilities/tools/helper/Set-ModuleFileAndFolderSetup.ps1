@@ -47,17 +47,17 @@ function Set-ModuleFileAndFolderSetup {
 
     if ([String]::IsNullOrEmpty($CurrentLevelFolderPath)) {
         # Extract path elements
-        $repoRoot, $moduleType, $resourceTypeIdentifier = $FullModuleFolderPath -split '[\/|\\]modules[\/|\\](res|ptn|utl)[\/|\\]' # .*/bicep-registry-modules, res|ptn|utl, <provider>/<resourceType>
+        $repoRoot, $moduleRootFolder, $moduleType, $resourceTypeIdentifier = $FullModuleFolderPath -split '[\/|\\](\w+)[\/|\\](res|ptn|utl)[\/|\\]' # .*/bicep-registry-modules, res|ptn|utl, <provider>/<resourceType>
 
         # Split resource type identifier into components
         $providerNamespace, $resourceType, $childResourceType = $resourceTypeIdentifier -split '[\/|\\]', 3 # <provider>, <resourceType>, <childResourceType>
 
         # Join the required path to get up to the resource type folder
-        $CurrentLevelFolderPath = Join-Path $repoRoot 'modules' $moduleType $providerNamespace $resourceType
+        $CurrentLevelFolderPath = Join-Path $repoRoot $moduleRootFolder $moduleType $providerNamespace $resourceType
     }
 
     # Collect data
-    $resourceTypeIdentifier = ($CurrentLevelFolderPath -split '[\/|\\]modules[\/|\\](res|ptn|utl)[\/|\\]')[2] # modules/res/<provider>/<resourceType>
+    $resourceTypeIdentifier = ($CurrentLevelFolderPath -split '[\/|\\]\w+[\/|\\](res|ptn|utl)[\/|\\]')[2] # modules/res/<provider>/<resourceType>
     $isTopLevel = ($resourceTypeIdentifier -split '[\/|\\]').Count -eq 2
 
     # Mandatory files
