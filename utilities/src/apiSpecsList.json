@@ -5942,36 +5942,28 @@
     "listApprovedSchemas": [
       "2023-10-11-preview",
       "2024-01-25",
-      "2024-05-07",
-      "2024-09-11",
-      "2024-09-27"
+      "2024-05-07"
     ],
     "locations": [
       "2022-12-13-preview",
       "2023-06-28",
       "2023-10-11-preview",
       "2024-01-25",
-      "2024-05-07",
-      "2024-09-11",
-      "2024-09-27"
+      "2024-05-07"
     ],
     "locations/operationStatuses": [
       "2022-12-13-preview",
       "2023-06-28",
       "2023-10-11-preview",
       "2024-01-25",
-      "2024-05-07",
-      "2024-09-11",
-      "2024-09-27"
+      "2024-05-07"
     ],
     "operations": [
       "2022-12-13-preview",
       "2023-06-28",
       "2023-10-11-preview",
       "2024-01-25",
-      "2024-05-07",
-      "2024-09-11",
-      "2024-09-27"
+      "2024-05-07"
     ],
     "pipelines": [
       "2022-12-13-preview",
@@ -5985,9 +5977,7 @@
     "validateSchema": [
       "2023-10-11-preview",
       "2024-01-25",
-      "2024-05-07",
-      "2024-09-11",
-      "2024-09-27"
+      "2024-05-07"
     ]
   },
   "Microsoft.AzureFleet": {
@@ -6047,7 +6037,8 @@
       "2023-06-01-preview",
       "2023-10-01-preview",
       "2024-02-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-12-01"
     ],
     "accounts/quotas": [
       "2024-02-01-preview",
@@ -20022,6 +20013,11 @@
       "2024-10-01-preview"
     ]
   },
+  "Microsoft.DevelopmentWindows365": {
+    "operations": [
+      "2023-11-01-preview"
+    ]
+  },
   "Microsoft.DevHub": {
     "iacProfiles": [
       "2024-05-01-preview",
@@ -20778,6 +20774,32 @@
       "2017-04-26-preview",
       "2018-09-15",
       "2018-10-15-preview"
+    ]
+  },
+  "Microsoft.Diagnostics": {
+    "apollo": [
+      "2020-07-01-preview"
+    ],
+    "azureKB": [
+      "2020-07-01-preview"
+    ],
+    "checkNameAvailability": [
+      "2020-07-01-preview"
+    ],
+    "discoverSolutions": [
+      "2020-07-01-preview"
+    ],
+    "insights": [
+      "2020-07-01-preview"
+    ],
+    "operationResults": [
+      "2020-07-01-preview"
+    ],
+    "operations": [
+      "2020-07-01-preview"
+    ],
+    "solutions": [
+      "2020-07-01-preview"
     ]
   },
   "Microsoft.DigitalTwins": {
@@ -38424,9 +38446,6 @@
       "2023-07-01",
       "2023-07-01-preview"
     ],
-    "virtualNetworks/listDnsResolverPolicies": [
-      "2023-07-01-preview"
-    ],
     "virtualNetworks/listDnsResolvers": [
       "2020-04-01-preview",
       "2022-07-01",
@@ -46616,7 +46635,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "signalR/customCertificates": [
       "2022-02-01",
@@ -46628,7 +46648,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "signalR/customDomains": [
       "2020-05-01",
@@ -46646,7 +46667,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "SignalR/eventGridFilters": [
       "2018-03-01-preview",
@@ -46684,7 +46706,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "signalR/replicas": [
       "2023-03-01-preview",
@@ -46693,13 +46716,15 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "signalR/replicas/sharedPrivateLinkResources": [
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "signalR/sharedPrivateLinkResources": [
       "2021-04-01-preview",
@@ -46715,7 +46740,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "webPubSub": [
       "2020-05-01",
@@ -46731,7 +46757,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "webPubSub/customCertificates": [
       "2022-08-01-preview",
@@ -46742,7 +46769,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "webPubSub/customDomains": [
       "2020-05-01",
@@ -46758,7 +46786,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "webPubSub/hubs": [
       "2021-10-01",
@@ -46770,7 +46799,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "webPubSub/privateEndpointConnections": [
       "2021-04-01-preview",
@@ -46785,7 +46815,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "webPubSub/replicas": [
       "2023-03-01-preview",
@@ -46794,13 +46825,15 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "webPubSub/replicas/sharedPrivateLinkResources": [
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ],
     "webPubSub/sharedPrivateLinkResources": [
       "2021-04-01-preview",
@@ -46815,7 +46848,8 @@
       "2024-01-01-preview",
       "2024-03-01",
       "2024-04-01-preview",
-      "2024-08-01-preview"
+      "2024-08-01-preview",
+      "2024-10-01-preview"
     ]
   },
   "Microsoft.Singularity": {
